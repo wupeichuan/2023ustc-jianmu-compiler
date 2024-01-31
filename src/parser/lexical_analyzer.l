@@ -54,7 +54,7 @@ float {pos_start = pos_end; pos_end += 5; pass_node(yytext); return FLOAT;}
 [a-zA-Z]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return ID;}
 [0-9]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return INTEGER;}
 [0-9]+\.|[0-9]*\.[0-9]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return FLOATPOINT;}
-\/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/ {
+\/\*([^\*]|(\*)*[^\*\/])*(\*)*\*\/ {
      for(int i = 0;i < strlen(yytext);i++)
 	{
 	    pos_end++;
@@ -64,10 +64,10 @@ float {pos_start = pos_end; pos_end += 5; pass_node(yytext); return FLOAT;}
          }
      }
      break;
+    
      }
 [ \f\n\r\t\v] {pos_start = pos_end;pos_end+=strlen(yytext);}
 [\n]+ {pos_start = 1;pos_end = 1;lines+=strlen(yytext);}
-\/\/[^\n]* {pos_start = 1;pos_end = 1;lines+=1;}
 . { pos_start = pos_end; pos_end++; return ERROR; } 
 
  /****请在此补全所有flex的模式与动作  end******/

@@ -81,7 +81,7 @@ param-list : param-list COMMA param { $$ = node("param-list", 3, $1, $2, $3); }
            | param { $$ = node("param-list", 1, $1); }
 
 param : type-specifier ID { $$ = node("param", 2, $1, $2); }
-      | type-specifier ID LBRACK RBRACK { $$ = node("param", 3, $1, $2, $3); }
+      | type-specifier ID LBRACK RBRACK { $$ = node("param", 4, $1, $2, $3, $4); }
 
 compound-stmt : LCURL local-declarations statement-list RCURL { $$ = node("compound-stmt", 4, $1, $2, $3, $4); }
 
