@@ -19,6 +19,7 @@ extern int pos_end;
 extern int pos_start;
 
 // Global syntax tree
+
 syntax_tree *gt;
 
 // Error reporting
@@ -32,146 +33,128 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
    Hint: See pass_node(), node(), and syntax_tree.h.
          Use forward declaring. */
 %union {
-    char node;
+	struct _syntax_tree_node *node; //bug
 }
 
 /* TODO: Your tokens here. */
-%token <node> ERROR
-
-%token <node> ADD
-%token <node> SUB
-%token <node> MUL
-%token <node> DIV
-%token <node> LESS
-%token <node> ELESS
-%token <node> MORE
-%token <node> EMORE
-%token <node> LOGEQUAL
-%token <node> LOGINEQUAL
-%token <node> EQUAL
-%token <node> SEMICOLON
-%token <node> COMMA
-%token <node> LPAREN
-%token <node> RPAREN
-%token <node> LBRACK
-%token <node> RBRACK
-%token <node> LCURL
-%token <node> RCURL
-%token <node> LCOM
-%token <node> RCOM
-
-%token <node> ELSE
-%token <node> IF
-%token <node> INT
-%token <node> RETURN
-%token <node> VOID
-%token <node> WHILE
-%token <node> FLOAT
-
-%token <node> ID
-%token <node> INTEGER
-%token <node> FLOATPOINT
-%type <node> program
+%token <node> ERROR ADD SUB MUL DIV LESS ELESS MORE EMORE 
+            LOGEQUAL LOGINEQUAL EQUAL SEMICOLON COMMA LPAREN RPAREN LBRACK
+            RBRACK LCURL RCURL ELSE IF INT RETURN VOID WHILE FLOAT
+            ID INTEGER FLOATPOINT
+%type <node> program declaration-list declaration var-declaration
+            type-specifier fun-declaration params param-list param
+            compound-stmt local-declarations statement-list
+            statement expression-stmt selection-stmt iteration-stmt
+            return-stmt expression var simple-expression relop
+            additive-expression addop term mulop factor integer float call
+            args arg-list
 
 %start program
+
+
 
 %%
 /* TODO: Your rules here. */
 
-program: declaration-list {$$ = node( "program", 1, $1); gt->root = $$;}
-       ;
+program : declaration-list { $$ = node("program", 1, $1); gt->root = $$; }
+        ;
 
-declaration-list: declaration-list declaration {$$ = node("declaration-list", 2, $1, $2); gt->root = $$;}
-| declaration {$$ = node("declaration-list", 1, $1); gt->root = $$;}
+declaration-list : declaration-list declaration { $$ = node("declaration-list", 2, $1, $2);}
+                 | declaration { $$ = node("declaration-list", 1, $1); }
 
-declaration: var-declaration {$$ = node( "declaration", 1, $1); gt->root = $$;}
-| fun-declaration {$$ = node( "declaration", 1, $1); gt->root = $$;}
+declaration : var-declaration { $$ = node("declaration", 1, $1); }
+            | fun-declaration { $$ = node("declaration", 1, $1); }
 
-var-declaration: type-specifier ID SEMICOLON {$$ = node("var-declaration", 3, $1, $2, $3); gt->root = $$;}
-| type-specifier LBRACK ID RBRACK SEMICOLON {$$ = node("var-declaration", 5, $1, $2, $3, $4, $5); gt->root = $$;}
+var-declaration : type-specifier ID SEMICOLON { $$ = node("var-declaration", 3, $1, $2, $3); }
+                | type-specifier ID LBRACK INTEGER RBRACK SEMICOLON { $$ = node("var-declaration", 6, $1, $2, $3, $4, $5, $6); }
 
-type-specifier: INT {$$ = node( "type-specifier", 1, $1); gt->root = $$;}
-| FLOAT {$$ = node( "type-specifier", 1, $1); gt->root = $$;}
-| VOID {$$ = node( "type-specifier", 1, $1); gt->root = $$;}
+type-specifier : INT { $$ = node("type-specifier", 1, $1); }
+               | FLOAT { $$ = node("type-specifier", 1, $1); }
+               | VOID { $$ = node("type-specifier", 1, $1); }
 
-fun-declaration: type-specifier ID​ LPAREN​ params RPAREN​ compound-stmt {$$ = node( "fun-declaration", 6, $1, $2, $3, $4, $5,$6); gt->root = $$;}
+fun-declaration : type-specifier ID LPAREN params RPAREN compound-stmt { $$ = node("fun-declaration", 6, $1, $2, $3, $4, $5, $6); }
 
-params: param-list {$$ = node( "params", 1, $1); gt->root = $$;}
-∣ VOID {$$ = node( "params", 1, $1); gt->root = $$;}
+params : param-list { $$ = node("params", 1, $1); }
+       | VOID { $$ = node("params", 1, $1); }
 
-param-list: param-list COMMA​ param {$$ = node( "param-list", 3, $1, $2, $3); gt->root = $$;}
-∣ param {$$ = node( "param-list", 1, $1); gt->root = $$;}
+param-list : param-list COMMA param { $$ = node("param-list", 3, $1, $2, $3); }
+           | param { $$ = node("param-list", 1, $1); }
 
-param: type-specifier ID​ {$$ = node( "param", 2, $1, $2); gt->root = $$;}
-∣ type-specifier ID​ LBRACK​ RBRACK {$$ = node( "param", 4, $1, $2, $3, $4); gt->root = $$;}
+param : type-specifier ID { $$ = node("param", 2, $1, $2); }
+      | type-specifier ID LBRACK RBRACK { $$ = node("param", 3, $1, $2, $3); }
 
-compound-stmt: LCURL​ local-declarations statement-list RCURL {$$ = node( "compound-stmt", 4, $1, $2, $3, $4); gt->root = $$;}
+compound-stmt : LCURL local-declarations statement-list RCURL { $$ = node("compound-stmt", 4, $1, $2, $3, $4); }
 
-local-declarations: local-declarations var-declaration {$$ = node( "local-declarations", 2, $1, $2); gt->root = $$;}
-∣ empty {$$ = node( "local-declarations", 0); gt->root = $$;}
+local-declarations : { $$ = node("local-declarations", 0); }
+                   | local-declarations var-declaration { $$ = node("local-declarations", 2, $1, $2); }
 
-statement: ​expression-stmt {$$ = node( "statement", 1, $1); gt->root = $$;}
-∣ compound-stmt {$$ = node( "statement", 1, $1); gt->root = $$;}
-∣ selection-stmt {$$ = node( "statement", 1, $1); gt->root = $$;}
-∣ iteration-stmt {$$ = node( "statement", 1, $1); gt->root = $$;}
-∣ return-stmt​ {$$ = node( "statement", 1, $1); gt->root = $$;}
+statement-list : { $$ = node("statement-list", 0); }
+               | statement-list statement { $$ = node("statement-list", 2, $1, $2); }
 
-expression-stmt: expression SEMICOLON {$$ = node( "expression-stmt", 2, $1, $2); gt->root = $$;}
-∣ SEMICOLON {$$ = node( "expression-stmt", 1, $1); gt->root = $$;}
+statement : expression-stmt { $$ = node("statement", 1, $1); }
+          | compound-stmt { $$ = node("statement", 1, $1); }
+          | selection-stmt { $$ = node("statement", 1, $1); }
+          | iteration-stmt { $$ = node("statement", 1, $1); }
+          | return-stmt { $$ = node("statement", 1, $1); }
 
-selection-stmt: IF​ LPAREN​ expression RPAREN​ statement {$$ = node( "selection-stmt", 5, $1, $2, $3, $4, $5); gt->root = $$;}
-∣ IF​ LPAREN​ expression RPAREN​ statement ELSE​ statement​ {$$ = node( "selection-stmt", 7, $1, $2, $3, $4, $5, $6, $7); gt->root = $$;}
+expression-stmt : expression SEMICOLON { $$ = node("expression-stmt", 2, $1, $2); }
+                | SEMICOLON { $$ = node("expression-stmt", 1, $1); }
 
-iteration-stmt: WHILE​ LPAREN​ expression RPAREN​ statement {$$ = node( "iteration-stmt", 5, $1, $2, $3, $4, $5); gt->root = $$;}
+selection-stmt : IF LPAREN expression RPAREN statement { $$ = node("selection-stmt", 5, $1, $2, $3, $4, $5); }
+               | IF LPAREN expression RPAREN statement ELSE statement { $$ = node("selection-stmt", 7, $1, $2, $3, $4, $5, $6, $7); }
 
-return-stmt: RETURN SEMICOLON {$$ = node( "return-stmt", 2, $1, $2); gt->root = $$;} 
-∣ RETURN​ expression SEMICOLON {$$ = node( "return-stmt", 3, $1, $2, $3); gt->root = $$;} 
+iteration-stmt : WHILE LPAREN expression RPAREN statement { $$ = node("iteration-stmt", 5, $1, $2, $3, $4, $5); }
 
-expression: var EQUAL​ expression {$$ = node( "expression", 3, $1, $2, $3); gt->root = $$;} 
-∣ simple-expression {$$ = node( "expression", 1, $1); gt->root = $$;} 
+return-stmt : RETURN SEMICOLON { $$ = node("return-stmt", 2, $1, $2); }
+            | RETURN expression SEMICOLON { $$ = node("return-stmt", 3, $1, $2, $3); }
 
-var: ID​ {$$ = node( "var", 1, $1); gt->root = $$;}
-∣ ID​ LBRACK expression RBRACK {$$ = node( "var", 4, $1, $2, $3, $4); gt->root = $$;}
+expression : var EQUAL expression { $$ = node("expression", 3, $1, $2, $3); }
+           | simple-expression { $$ = node("expression", 1, $1); }
 
-simple-expression: additive-expression relop additive-expression {$$ = node( "simple-expression", 3, $1, $2, $3); gt->root = $$;}
-∣ additive-expression {$$ = node( "simple-expression", 1, $1); gt->root = $$;}
+var : ID { $$ = node("var", 1, $1); }
+    | ID LBRACK expression RBRACK { $$ = node("var", 4, $1, $2, $3, $4); }
 
-relop: ELESS {$$ = node( "relop", 1, $1); gt->root = $$;}
-∣ LESS​ {$$ = node( "relop", 1, $1); gt->root = $$;}
-∣ MORE​ {$$ = node( "relop", 1, $1); gt->root = $$;}
-∣ EMORE​ {$$ = node( "relop", 1, $1); gt->root = $$;}
-∣ LOGEQUAL​ {$$ = node( "relop", 1, $1); gt->root = $$;}
-∣ LOGINEQUAL {$$ = node( "relop", 1, $1); gt->root = $$;}
+simple-expression : additive-expression relop additive-expression { $$ = node("simple-expression", 3, $1, $2, $3); }
+                  | additive-expression { $$ = node("simple-expression", 1, $1); }
 
-additive-expression: additive-expression addop term {$$ = node( "additive-expression", 3, $1, $2, $3); gt->root = $$;}
-∣ term {$$ = node( "additive-expression", 1, $1); gt->root = $$;}
+relop : ELESS { $$ = node("relop", 1, $1); }
+      | LESS { $$ = node("relop", 1, $1); }
+      | MORE { $$ = node("relop", 1, $1); }
+      | EMORE { $$ = node("relop", 1, $1); }
+      | LOGEQUAL { $$ = node("relop", 1, $1); }
+      | LOGINEQUAL { $$ = node("relop", 1, $1); }
 
-addop: ADD {$$ = node( "addop", 1, $1); gt->root = $$;}
-∣ SUB {$$ = node( "addop", 1, $1); gt->root = $$;}
+additive-expression : additive-expression addop term { $$ = node("additive-expression", 3, $1, $2, $3); }
+                    | term { $$ = node("additive-expression", 1, $1); }
 
-term: term mulop factor {$$ = node( "term", 3, $1, $2, $3); gt->root = $$;}
-∣ factor {$$ = node( "term", 1, $1); gt->root = $$;}
+addop : ADD { $$ = node("addop", 1, $1); }
+      | SUB { $$ = node("addop", 1, $1); }
 
-mulop: MUL {$$ = node( "mulop", 1, $1); gt->root = $$;}
-∣ DIV {$$ = node( "mulop", 1, $1); gt->root = $$;}
+term : term mulop factor { $$ = node("term", 3, $1, $2, $3); }
+     | factor { $$ = node("term", 1, $1); }
 
-factor:LPAREN​ expression RPAREN {$$ = node( "factor", 3, $1, $2, $3); gt->root = $$;}
-∣ var {$$ = node( "factor", 1, $1); gt->root = $$;}
-∣ call {$$ = node( "factor", 1, $1); gt->root = $$;}
-∣ integer {$$ = node( "factor", 1, $1); gt->root = $$;}
-∣ float {$$ = node( "factor", 1, $1); gt->root = $$;}
+mulop : MUL { $$ = node("mulop", 1, $1); }
+      | DIV { $$ = node("mulop", 1, $1); }
 
-integer: INTEGER​ {$$ = node( "integer", 1, $1); gt->root = $$;}
+factor : LPAREN expression RPAREN { $$ = node("factor", 3, $1, $2, $3); }
+       | var { $$ = node("factor", 1, $1); }
+       | call { $$ = node("factor", 1, $1); }
+       | integer { $$ = node("factor", 1, $1); }
+       | float { $$ = node("factor", 1, $1); }
 
-float: FLOATPOINT {$$ = node( "float", 1, $1); gt->root = $$;}
+integer : INTEGER { $$ = node("integer", 1, $1); }
 
-call: ID LPAREN args RPAREN {$$ = node( "call", 4, $1, $2, $3, $4); gt->root = $$;}
+float : FLOATPOINT { $$ = node("float", 1, $1); }
 
-args: arg-list {$$ = node( "args", 1, $1); gt->root = $$;}
-∣ empty {$$ = node( "args", 1, $1); gt->root = $$;}
+call : ID LPAREN args RPAREN { $$ = node("call", 4, $1, $2, $3, $4); }
 
-arg-list: arg-list COMMA​ expression {$$ = node( "arg-list", 3, $1, $2, $3); gt->root = $$;}
-∣ expression {$$ = node( "arg-list", 1, $1); gt->root = $$;}
+args : { $$ = node("args", 0); }
+     | arg-list { $$ = node("args", 1, $1); }
+
+arg-list : arg-list COMMA expression { $$ = node("arg-list", 3, $1, $2, $3); }
+         | expression { $$ = node("arg-list", 1, $1); }
+
+
 
 %%
 

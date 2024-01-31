@@ -8,8 +8,8 @@
 #include "syntax_analyzer.h"
 
 int lines;
-int pos_start;
-int pos_end;
+int pos_start=1;
+int pos_end=1;
 
 void pass_node(char *text){
      yylval.node = new_syntax_tree_node(text);
@@ -42,8 +42,7 @@ void pass_node(char *text){
 \]   {pos_start = pos_end; pos_end += 1; pass_node(yytext); return RBRACK;}
 \{   {pos_start = pos_end; pos_end += 1; pass_node(yytext); return LCURL;}
 \}   {pos_start = pos_end; pos_end += 1; pass_node(yytext); return RCURL;}
-"/*"   {pos_start = pos_end; pos_end += 2; pass_node(yytext); return LCOM;}
-"*/"   {pos_start = pos_end; pos_end += 2; pass_node(yytext); return RCOM;}
+
 else {pos_start = pos_end; pos_end += 4; pass_node(yytext); return ELSE;}
 if {pos_start = pos_end; pos_end += 2; pass_node(yytext); return IF;}
 int {pos_start = pos_end; pos_end += 3; pass_node(yytext); return INT;}
@@ -51,10 +50,25 @@ return {pos_start = pos_end; pos_end += 6; pass_node(yytext); return RETURN;}
 void {pos_start = pos_end; pos_end += 4; pass_node(yytext); return VOID;}
 while {pos_start = pos_end; pos_end += 5; pass_node(yytext); return WHILE;}
 float {pos_start = pos_end; pos_end += 5; pass_node(yytext); return FLOAT;}
+
 [a-zA-Z]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return ID;}
 [0-9]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return INTEGER;}
-[0-9]+/.|[0-9]*/.[0-9]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return FLOATPOINT;}
-. { pos_start = pos_end; pos_end++; return ERROR; }
+[0-9]+\.|[0-9]*\.[0-9]+ {pos_start = pos_end; pos_end += strlen(yytext); pass_node(yytext); return FLOATPOINT;}
+\/\*([^\*^\/]*|[\*^\/*]*|[^\**\/]*)*\*\/ {
+     for(int i = 0;i < strlen(yytext);i++)
+	{
+	    pos_end++;
+         if( yytext[i] == '\n' )
+         {
+          lines += 1;pos_end = 1;
+         }
+     }
+     break;
+     }
+[ \f\n\r\t\v] {pos_start = pos_end;pos_end+=strlen(yytext);}
+[\n]+ {pos_start = 1;pos_end = 1;lines+=strlen(yytext);}
+\/\/[^\n]* {pos_start = 1;pos_end = 1;lines+=1;}
+. { pos_start = pos_end; pos_end++; return ERROR; } 
 
  /****请在此补全所有flex的模式与动作  end******/
 %%
