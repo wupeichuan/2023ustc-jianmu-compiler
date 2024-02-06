@@ -155,19 +155,19 @@ Value* CminusfBuilder::visit(ASTCompoundStmt &node) {
 Value* CminusfBuilder::visit(ASTExpressionStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
-    auto expressionLoad = node.expression->accept(*this);
-    return expressionLoad;
+    // return node.expression->accept(*this);
+    return nullptr;
 }
 
 Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
-    //auto expressionLoad = node.expression->accept(*this);
+    auto expressionLoad = node.expression->accept(*this);
     if(node.else_statement!=nullptr){
         auto trueBB = BasicBlock::create(module.get(), "trueBB", context.func);
         auto falseBB = BasicBlock::create(module.get(), "falseBB", context.func);
         auto brBB = BasicBlock::create(module.get(), "brBB", context.func);
-        //builder->create_cond_br(expressionLoad,trueBB,falseBB);
+        builder->create_cond_br(expressionLoad,trueBB,falseBB);
         builder->set_insert_point(trueBB);
         scope.enter();
         node.if_statement->accept(*this);
@@ -183,7 +183,7 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
     else{
         auto trueBB = BasicBlock::create(module.get(), "trueBB", context.func);
         auto brBB = BasicBlock::create(module.get(), "brBB", context.func);
-        //builder->create_cond_br(expressionLoad,trueBB,brBB);
+        builder->create_cond_br(expressionLoad,trueBB,brBB);
         builder->set_insert_point(trueBB);
         scope.enter();
         node.if_statement->accept(*this);

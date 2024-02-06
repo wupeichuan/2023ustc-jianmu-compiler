@@ -166,7 +166,8 @@ struct ASTReturnStmt : ASTStatement {
     std::shared_ptr<ASTExpression> expression;
 };
 
-struct ASTExpression : ASTFactor {};
+struct ASTExpression : ASTFactor {
+};
 
 struct ASTAssignExpression : ASTExpression {
     virtual Value *accept(ASTVisitor &) override final;

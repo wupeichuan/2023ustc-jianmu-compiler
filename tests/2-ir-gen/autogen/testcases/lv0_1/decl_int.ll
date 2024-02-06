@@ -1,5 +1,5 @@
 ; ModuleID = 'cminus'
-source_filename = "/home/hzw/桌面/2023ustc-jianmu-compiler-master/tests/2-ir-gen/autogen/testcases/lv0_1/decl_int.cminus"
+source_filename = "/home/hzw/桌面/2023ustc-jianmu-compiler/tests/2-ir-gen/autogen/testcases/lv0_1/decl_int.cminus"
 
 declare i32 @input()
 
