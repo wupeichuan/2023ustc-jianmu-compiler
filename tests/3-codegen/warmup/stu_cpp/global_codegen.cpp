@@ -80,7 +80,7 @@ void translate_main(CodeGen *codegen) {
     /* %op0 = load i32, i32* @a */
     codegen->append_inst("%op0 = load i32, i32* @a", ASMInstruction::Comment);
     // 将 a 的值写入 %op0 对应的内存空间中
-    offset_map["%op0"] = ; // TODO: 请填空
+    //offset_map["%op0"] = ; // TODO: 请填空
     // TODO: 获得 a 的地址, 并存储在 $t0 中
     codegen->append_inst("");
     // 将 a 的值写入 %op0 对应的内存空间中

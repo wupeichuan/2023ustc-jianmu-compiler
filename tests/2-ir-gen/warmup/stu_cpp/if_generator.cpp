@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 
+//this program is not proper
 int main() {
     auto module = new Module();
     auto builder = new IRBuilder(nullptr,module);
@@ -24,6 +25,7 @@ int main() {
     auto conLoad = builder->create_load(conAlloca);
     
     auto aLoad = builder->create_load(aAlloca);
+
     auto icmp = builder->create_fcmp_gt(aLoad, conLoad);
 
     auto trueBB = BasicBlock::create(module, "trueBB", mainFun);

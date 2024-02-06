@@ -34,6 +34,7 @@ int main() {
     auto cAlloca = builder->create_alloca(Int32Type);
     builder->create_store(ConstantInt::get(110,module),cAlloca);
     auto cLoad = builder->create_load(cAlloca);
+
     auto call = builder->create_call(calleeFun,{cLoad});
     builder->create_ret(call);
 

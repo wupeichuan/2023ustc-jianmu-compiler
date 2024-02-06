@@ -53,7 +53,7 @@ void translate_main(CodeGen *codegen) {
         "%op0 = fcmp ugt float 0x4016000000000000, 0x3ff0000000000000",
         ASMInstruction::Comment);
     // 将比较结果写入 %op0 对应的内存空间中
-    offset_map["%op0"] = ; // TODO: 请填空
+    //offset_map["%op0"] = ; // TODO: 请填空
     // TODO: 将 5.5 (0x40b00000) 加载到浮点寄存器中
     codegen->append_inst("");
     // TODO: 将 1.0 (0x3f800000) 加载到浮点寄存器中
@@ -66,7 +66,7 @@ void translate_main(CodeGen *codegen) {
     codegen->append_inst("%op1 = zext i1 %op0 to i32", ASMInstruction::Comment);
     // 将 %op0 的值从 i1 类型转换为 i32 类型, 并将结果写入到 %op1 对应的内存空
     // 间中
-    offset_map["%op1"] = ; // TODO: 请填空
+    //offset_map["%op1"] = ; // TODO: 请填空
     // TODO: 获得 %op0 的值, 然后进行转换, 最后将结果写入 %op1
     // 思考: 怎么转换? 需不需要显式地使用某些指令转换?
     codegen->append_inst("");
@@ -74,7 +74,7 @@ void translate_main(CodeGen *codegen) {
     /* %op2 = icmp ne i32 %op1, 0 */
     codegen->append_inst("%op2 = icmp ne i32 %op1, 0", ASMInstruction::Comment);
     // 比较 %op1 和 0, 并将结果写入 %op2 对应的内存空间中
-    offset_map["%op2"] = ; // TODO: 请填空
+    //offset_map["%op2"] = ; // TODO: 请填空
     // TODO: 获得 %op1 的值, 然后进行比较, 最后将结果写入 %op2
     // 思考: 如何比较? 能否不使用跳转指令计算结果?
     // 提示: 尝试使用 xor/xori 和 slt/sltu/slti/sltui 计算比较结果
