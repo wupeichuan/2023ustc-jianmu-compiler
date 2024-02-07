@@ -166,10 +166,14 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
     auto expressionLoad = node.expression->accept(*this);
+    if(expressionLoad->get_type()->is_float_type())
+        expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
+    else if(expressionLoad->get_type()->is_int32_type())
+        expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
     if(node.else_statement!=nullptr){
-        auto trueBB = BasicBlock::create(module.get(), "trueBB", context.func);
-        auto falseBB = BasicBlock::create(module.get(), "falseBB", context.func);
-        auto brBB = BasicBlock::create(module.get(), "brBB", context.func);
+        auto trueBB = BasicBlock::create(module.get(), "", context.func);
+        auto falseBB = BasicBlock::create(module.get(), "", context.func);
+        auto brBB = BasicBlock::create(module.get(), "", context.func);
         builder->create_cond_br(expressionLoad,trueBB,falseBB);
         builder->set_insert_point(trueBB);
         scope.enter();
@@ -184,8 +188,8 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
         builder->set_insert_point(brBB);    
     }
     else{
-        auto trueBB = BasicBlock::create(module.get(), "trueBB", context.func);
-        auto brBB = BasicBlock::create(module.get(), "brBB", context.func);
+        auto trueBB = BasicBlock::create(module.get(), "", context.func);
+        auto brBB = BasicBlock::create(module.get(), "", context.func);
         builder->create_cond_br(expressionLoad,trueBB,brBB);
         builder->set_insert_point(trueBB);
         scope.enter();
@@ -201,14 +205,22 @@ Value* CminusfBuilder::visit(ASTIterationStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
     auto expressionLoad = node.expression->accept(*this);
-    auto trueBB = BasicBlock::create(module.get(), "trueBB", context.func);
-    auto brBB = BasicBlock::create(module.get(), "brBB", context.func);
+    if(expressionLoad->get_type()->is_float_type())
+        expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
+    else if(expressionLoad->get_type()->is_int32_type())
+        expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
+    auto trueBB = BasicBlock::create(module.get(), "", context.func);
+    auto brBB = BasicBlock::create(module.get(), "", context.func);
     builder->create_cond_br(expressionLoad,trueBB,brBB);
     builder->set_insert_point(trueBB);
     scope.enter();
     node.statement->accept(*this);
     scope.exit();
     expressionLoad = node.expression->accept(*this);
+    if(expressionLoad->get_type()->is_float_type())
+        expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
+    else if(expressionLoad->get_type()->is_int32_type())
+        expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
     builder->create_cond_br(expressionLoad,trueBB,brBB);
     builder->set_insert_point(brBB);
     return nullptr;
@@ -254,8 +266,8 @@ Value* CminusfBuilder::visit(ASTVar &node) {
         else if(index->get_type()->is_int1_type())
             index = builder->create_zext(index,INT32_T);
         else{}
-        auto normalBB = BasicBlock::create(module.get(),"normalBB",context.func);
-        auto errorBB = BasicBlock::create(module.get(),"errorBB",context.func);
+        auto normalBB = BasicBlock::create(module.get(),"",context.func);
+        auto errorBB = BasicBlock::create(module.get(),"",context.func);
         auto brBB = BasicBlock::create(module.get(),"",context.func);
         auto icmp = builder->create_icmp_ge(index,ConstantInt::get(0,module.get()));
         builder->create_cond_br(icmp,normalBB,errorBB);
@@ -287,11 +299,13 @@ Value* CminusfBuilder::visit(ASTAssignExpression &node) {
     context._varstate.pop_back();
     auto expressionLoad = node.expression->accept(*this);
     if(varAlloca->get_type()->get_pointer_element_type()->is_float_type()&&expressionLoad->get_type()->is_integer_type())
-        expressionLoad = builder->create_sitofp(expressionLoad,INT32_T);
-    else if(varAlloca->get_type()->get_pointer_element_type()->is_integer_type()&&expressionLoad->get_type()->is_float_type())
-        expressionLoad = builder->create_fptosi(expressionLoad,FLOAT_T);
+        expressionLoad = builder->create_sitofp(expressionLoad,FLOAT_T);
+    else if(varAlloca->get_type()->get_pointer_element_type()->is_integer_type()&&expressionLoad->get_type()->is_float_type()){
+        if(varAlloca->get_type()->get_pointer_element_type()->is_int1_type()) expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
+        else expressionLoad = builder->create_fptosi(expressionLoad,INT32_T);
+    }
     else if(varAlloca->get_type()->get_pointer_element_type()->is_integer_type()&&expressionLoad->get_type()->is_integer_type()){
-        if(expressionLoad->get_type()->is_int1_type()) expressionLoad = builder->create_zext(expressionLoad,INT32_T);
+        if(varAlloca->get_type()->get_pointer_element_type()->is_int1_type()) expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
     }
     else{}
     builder->create_store(expressionLoad,varAlloca);
@@ -562,6 +576,14 @@ Value* CminusfBuilder::visit(ASTCall &node) {
             arg = builder->create_sitofp(arg,FLOAT_T);
         else if(callfun->get_param_type(i)->is_integer_type()&&arg->get_type()->is_integer_type()){
             if(arg->get_type()->is_int1_type()) arg = builder->create_zext(arg,INT32_T);
+        }
+        else if(callfun->get_param_type(i)->is_pointer_type()){
+            if(callfun->get_param_type(i)->get_pointer_element_type()->is_float_type()&&arg->get_type()->is_integer_type()){
+                arg = builder->create_sitofp(arg,FLOAT_T);
+            }
+            else if(callfun->get_param_type(i)->get_pointer_element_type()->is_integer_type()&&arg->get_type()->is_float_type()){
+                arg = builder->create_fptosi(arg,INT32_T);
+            }
         }
         else{}
         args.push_back(arg);
