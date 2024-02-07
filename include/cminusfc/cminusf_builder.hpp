@@ -108,6 +108,11 @@ class CminusfBuilder : public ASTVisitor {
     struct {
         // function that is being built
         Function *func = nullptr;
+        enum varstate{
+            load,
+            alloca
+        };
+        std::vector<enum varstate> _varstate;
         // TODO: you should add more fields to store state
     } context;
 };

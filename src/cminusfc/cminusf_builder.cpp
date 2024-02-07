@@ -155,8 +155,11 @@ Value* CminusfBuilder::visit(ASTCompoundStmt &node) {
 Value* CminusfBuilder::visit(ASTExpressionStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
-    // return node.expression->accept(*this);
-    return nullptr;
+    context._varstate.push_back(context.load);
+    auto pressionLoad = node.expression->accept(*this);
+    context._varstate.pop_back();
+    return pressionLoad;                        
+    //must remove the $PATH cminusfc
 }
 
 Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
@@ -215,10 +218,16 @@ Value* CminusfBuilder::visit(ASTReturnStmt &node) {
     if (node.expression == nullptr) {
         builder->create_void_ret();
         return nullptr;
-    } else {
+    } 
+    else {
         // TODO: The given code is incomplete.
         // You need to solve other return cases (e.g. return an integer).
         auto expressionLoad = node.expression->accept(*this);
+        if(context.func->get_return_type()->is_integer_type()&&expressionLoad->get_type()->is_float_type())
+            expressionLoad = builder->create_fptosi(expressionLoad,INT32_T);
+        else if(context.func->get_return_type()->is_float_type()&&expressionLoad->get_type()->is_integer_type())
+            expressionLoad = builder->create_sitofp(expressionLoad,FLOAT_T);
+        else{}
         builder->create_ret(expressionLoad);
         return nullptr;
     }
@@ -230,23 +239,61 @@ Value* CminusfBuilder::visit(ASTVar &node) {
     // Add some code here.
     if(node.expression==nullptr){
         auto varAlloca = scope.find(node.id);
-        auto varLoad = builder->create_load(varAlloca);
-        return varLoad;
+        if(context._varstate[context._varstate.size()-1]==context.alloca)
+            return varAlloca;
+        else{
+            auto varLoad = builder->create_load(varAlloca);
+            return varLoad;
+        }
     }
     else{
         auto index = node.expression->accept(*this);
         auto varAlloca = scope.find(node.id);
+        if(index->get_type()->is_float_type())
+            index = builder->create_fptosi(index,INT32_T);
+        else if(index->get_type()->is_int1_type())
+            index = builder->create_zext(index,INT32_T);
+        else{}
+        auto normalBB = BasicBlock::create(module.get(),"normalBB",context.func);
+        auto errorBB = BasicBlock::create(module.get(),"errorBB",context.func);
+        auto brBB = BasicBlock::create(module.get(),"",context.func);
+        auto icmp = builder->create_icmp_ge(index,ConstantInt::get(0,module.get()));
+        builder->create_cond_br(icmp,normalBB,errorBB);
+        builder->set_insert_point(normalBB);
         auto vargep = builder->create_gep(varAlloca,{ConstantInt::get(0,module.get()),index});
-        auto varLoad = builder->create_load(vargep);
-        return varLoad;
+        int flag = 0;
+        Value *varLoad;
+        if(context._varstate[context._varstate.size()-1]==context.load){
+            varLoad = builder->create_load(vargep);
+            flag = 1;
+        }
+        builder->create_br(brBB);
+        builder->set_insert_point(errorBB);
+        auto func = scope.find("neg_idx_except");
+        builder->create_call(func,{});
+        builder->create_br(brBB);
+        builder->set_insert_point(brBB);
+        if(flag == 0)
+            return vargep;   
+        else return varLoad; 
     }
 }
 
 Value* CminusfBuilder::visit(ASTAssignExpression &node) {
     // TODO: This function is empty now.
     // Add some code here.
+    context._varstate.push_back(context.alloca);
     auto varAlloca = node.var->accept(*this);
+    context._varstate.pop_back();
     auto expressionLoad = node.expression->accept(*this);
+    if(varAlloca->get_type()->get_pointer_element_type()->is_float_type()&&expressionLoad->get_type()->is_integer_type())
+        expressionLoad = builder->create_sitofp(expressionLoad,INT32_T);
+    else if(varAlloca->get_type()->get_pointer_element_type()->is_integer_type()&&expressionLoad->get_type()->is_float_type())
+        expressionLoad = builder->create_fptosi(expressionLoad,FLOAT_T);
+    else if(varAlloca->get_type()->get_pointer_element_type()->is_integer_type()&&expressionLoad->get_type()->is_integer_type()){
+        if(expressionLoad->get_type()->is_int1_type()) expressionLoad = builder->create_zext(expressionLoad,INT32_T);
+    }
+    else{}
     builder->create_store(expressionLoad,varAlloca);
     return nullptr;
 }
@@ -255,65 +302,143 @@ Value* CminusfBuilder::visit(ASTSimpleExpression &node) {
     // TODO: This function is empty now.
     // Add some code here.
     auto ladd = node.additive_expression_l->accept(*this);
-    auto radd = node.additive_expression_r->accept(*this);
-    if(node.op==OP_LE){
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_le(ladd,radd);
-            return cmp;
-        }
-        else{
-            auto cmp = builder->create_fcmp_le(ladd,radd);
-            return cmp;            
-        }
-    }
-    else if(node.op==OP_LT){
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_lt(ladd,radd);
-            return cmp;
-        }
-        else{
-            auto cmp = builder->create_fcmp_lt(ladd,radd);
-            return cmp;            
-        }
-    }
-    else if(node.op==OP_GT){
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_gt(ladd,radd);
-            return cmp;
-        }
-        else{
-            auto cmp = builder->create_fcmp_gt(ladd,radd);
-            return cmp;            
-        }
-    }
-    else if(node.op==OP_GE){
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_ge(ladd,radd);
-            return cmp;
-        }
-        else{
-            auto cmp = builder->create_fcmp_ge(ladd,radd);
-            return cmp;            
-        }
-    }
-    else if(node.op==OP_EQ){
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_eq(ladd,radd);
-            return cmp;
-        }
-        else{
-            auto cmp = builder->create_fcmp_eq(ladd,radd);
-            return cmp;            
-        }
+    if(node.additive_expression_r == nullptr){
+        return ladd;
     }
     else{
-        if(ladd->get_type()->is_integer_type()){
-            auto cmp = builder->create_icmp_ne(ladd,radd);
-            return cmp;
+        auto radd = node.additive_expression_r->accept(*this);
+
+        if(node.op==OP_LE){
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_le(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_le(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_le(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_le(ladd,radd);
+                return cmp;
+            }
+        }
+        else if(node.op==OP_LT){
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_lt(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_lt(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_lt(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_lt(ladd,radd);
+                return cmp;
+            }
+        }
+        else if(node.op==OP_GT){
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_gt(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_gt(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_gt(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_gt(ladd,radd);
+                return cmp;
+            }
+        }
+        else if(node.op==OP_GE){
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_ge(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_ge(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_ge(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_ge(ladd,radd);
+                return cmp;
+            }
+        }
+        else if(node.op==OP_EQ){
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_eq(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_eq(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_eq(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_eq(ladd,radd);
+                return cmp;
+            }
         }
         else{
-            auto cmp = builder->create_fcmp_ne(ladd,radd);
-            return cmp;            
+            if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_integer_type()){
+                if(ladd->get_type()->is_int1_type()) ladd = builder->create_zext(ladd,INT32_T);
+                if(radd->get_type()->is_int1_type()) radd = builder->create_zext(radd,INT32_T);
+                auto cmp = builder->create_icmp_ne(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_float_type()&&radd->get_type()->is_integer_type()){
+                radd = builder->create_sitofp(radd,FLOAT_T);
+                auto cmp = builder->create_fcmp_ne(ladd,radd);
+                return cmp;
+            }
+            else if(ladd->get_type()->is_integer_type()&&radd->get_type()->is_float_type()){
+                ladd = builder->create_sitofp(ladd,FLOAT_T);
+                auto cmp = builder->create_fcmp_ne(ladd,radd);
+                return cmp;
+            }
+            else{
+                auto cmp = builder->create_fcmp_ne(ladd,radd);
+                return cmp;
+            }
         }
     }
 }
@@ -328,24 +453,45 @@ Value* CminusfBuilder::visit(ASTAdditiveExpression &node) {
     else{
         auto addLoad = node.additive_expression->accept(*this);
         if(node.op==OP_PLUS){
-            if(termLoad->get_type()->is_integer_type()){
+            if(addLoad->get_type()->is_integer_type()&&termLoad->get_type()->is_integer_type()){
                 auto add = builder->create_iadd(addLoad,termLoad);
                 return add;
             }
-            else{
+            else if(addLoad->get_type()->is_float_type()&&termLoad->get_type()->is_integer_type()){
+                termLoad = builder->create_sitofp(termLoad,FLOAT_T);
+                auto add = builder->create_fadd(addLoad,termLoad);
+                
+                return add;                
+            }  
+            else if(addLoad->get_type()->is_integer_type()&&termLoad->get_type()->is_float_type()){
+                addLoad = builder->create_sitofp(addLoad,FLOAT_T);
                 auto add = builder->create_fadd(addLoad,termLoad);
                 return add;                
-            }               
+            }     
+            else{
+                auto add = builder->create_fadd(addLoad,termLoad);
+                return add; 
+            }        
         }
         else{
-            if(termLoad->get_type()->is_integer_type()){
+            if(addLoad->get_type()->is_integer_type()&&termLoad->get_type()->is_integer_type()){
                 auto add = builder->create_isub(addLoad,termLoad);
                 return add;
             }
-            else{
+            else if(addLoad->get_type()->is_float_type()&&termLoad->get_type()->is_integer_type()){
+                termLoad = builder->create_sitofp(termLoad,FLOAT_T);
                 auto add = builder->create_fsub(addLoad,termLoad);
                 return add;                
-            }
+            }  
+            else if(addLoad->get_type()->is_integer_type()&&termLoad->get_type()->is_float_type()){
+                addLoad = builder->create_sitofp(addLoad,FLOAT_T);
+                auto add = builder->create_fsub(addLoad,termLoad);
+                return add;                
+            }     
+            else{
+                auto add = builder->create_fsub(addLoad,termLoad);
+                return add; 
+            }        
         }
     }
 }
@@ -360,23 +506,43 @@ Value* CminusfBuilder::visit(ASTTerm &node) {
     else{
         auto termLoad = node.term->accept(*this);
         if(node.op==OP_MUL){
-            if(factorLoad->get_type()->is_integer_type()){
+            if(termLoad->get_type()->is_integer_type()&&factorLoad->get_type()->is_integer_type()){
                 auto mul = builder->create_imul(termLoad,factorLoad);
                 return mul;
             }
-            else{
+            else if(termLoad->get_type()->is_float_type()&&factorLoad->get_type()->is_integer_type()){
+                factorLoad = builder->create_sitofp(factorLoad,FLOAT_T);
                 auto mul = builder->create_fmul(termLoad,factorLoad);
                 return mul;                
             }
+            else if(termLoad->get_type()->is_integer_type()&&factorLoad->get_type()->is_float_type()){
+                termLoad = builder->create_sitofp(termLoad,FLOAT_T);
+                auto mul = builder->create_fmul(termLoad,factorLoad);
+                return mul;                
+            }
+            else{
+                auto mul = builder->create_fmul(termLoad,factorLoad);
+                return mul; 
+            }
         }
         else{
-            if(factorLoad->get_type()->is_integer_type()){
+            if(termLoad->get_type()->is_integer_type()&&factorLoad->get_type()->is_integer_type()){
                 auto mul = builder->create_isdiv(termLoad,factorLoad);
                 return mul;
             }
-            else{
+            else if(termLoad->get_type()->is_float_type()&&factorLoad->get_type()->is_integer_type()){
+                factorLoad = builder->create_sitofp(factorLoad,FLOAT_T);
                 auto mul = builder->create_fdiv(termLoad,factorLoad);
                 return mul;                
+            }
+            else if(termLoad->get_type()->is_integer_type()&&factorLoad->get_type()->is_float_type()){
+                termLoad = builder->create_sitofp(termLoad,FLOAT_T);
+                auto mul = builder->create_fdiv(termLoad,factorLoad);
+                return mul;                
+            }
+            else{
+                auto mul = builder->create_fdiv(termLoad,factorLoad);
+                return mul; 
             }
         }
     }
@@ -386,9 +552,20 @@ Value* CminusfBuilder::visit(ASTCall &node) {
     // TODO: This function is empty now.
     // Add some code here.
     std::vector<Value*> args;
-    for(long unsigned int i = 0; i < node.args.size(); ++i)
-        args.push_back(node.args[i]->accept(*this));
     auto func = scope.find(node.id);
+    auto callfun = static_cast<FunctionType*>(func->get_type());
+    for(long unsigned int i = 0; i < node.args.size(); ++i){
+        auto arg = node.args[i]->accept(*this);
+        if(callfun->get_param_type(i)->is_integer_type()&&arg->get_type()->is_float_type())
+            arg = builder->create_fptosi(arg,INT32_T);
+        else if(callfun->get_param_type(i)->is_float_type()&&arg->get_type()->is_integer_type())
+            arg = builder->create_sitofp(arg,FLOAT_T);
+        else if(callfun->get_param_type(i)->is_integer_type()&&arg->get_type()->is_integer_type()){
+            if(arg->get_type()->is_int1_type()) arg = builder->create_zext(arg,INT32_T);
+        }
+        else{}
+        args.push_back(arg);
+    }
     auto call = builder->create_call(func,args);
     return call;
 }
