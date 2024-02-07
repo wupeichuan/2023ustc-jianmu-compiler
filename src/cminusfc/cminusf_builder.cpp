@@ -272,9 +272,15 @@ Value* CminusfBuilder::visit(ASTVar &node) {
         auto icmp = builder->create_icmp_ge(index,ConstantInt::get(0,module.get()));
         builder->create_cond_br(icmp,normalBB,errorBB);
         builder->set_insert_point(normalBB);
-        auto vargep = builder->create_gep(varAlloca,{ConstantInt::get(0,module.get()),index});
-        int flag = 0;
+        Value *vargep;
         Value *varLoad;
+        if(varAlloca->get_type()->get_pointer_element_type()->is_array_type())
+            vargep = builder->create_gep(varAlloca,{ConstantInt::get(0,module.get()),index});
+        else{
+            varLoad = builder->create_load(varAlloca);
+            vargep = builder->create_gep(varLoad,{index});
+        }
+        int flag = 0;
         if(context._varstate[context._varstate.size()-1]==context.load){
             varLoad = builder->create_load(vargep);
             flag = 1;
@@ -287,7 +293,8 @@ Value* CminusfBuilder::visit(ASTVar &node) {
         builder->set_insert_point(brBB);
         if(flag == 0)
             return vargep;   
-        else return varLoad; 
+        else 
+            return varLoad; 
     }
 }
 
@@ -577,14 +584,16 @@ Value* CminusfBuilder::visit(ASTCall &node) {
         else if(callfun->get_param_type(i)->is_integer_type()&&arg->get_type()->is_integer_type()){
             if(arg->get_type()->is_int1_type()) arg = builder->create_zext(arg,INT32_T);
         }
-        else if(callfun->get_param_type(i)->is_pointer_type()){
-            if(callfun->get_param_type(i)->get_pointer_element_type()->is_float_type()&&arg->get_type()->is_integer_type()){
-                arg = builder->create_sitofp(arg,FLOAT_T);
-            }
-            else if(callfun->get_param_type(i)->get_pointer_element_type()->is_integer_type()&&arg->get_type()->is_float_type()){
-                arg = builder->create_fptosi(arg,INT32_T);
-            }
-        }
+        // else if(callfun->get_param_type(i)->is_pointer_type()){
+        //     if(callfun->get_param_type(i)->get_pointer_element_type()->is_float_type()&&arg->get_pointer_element_type()->is_integer_type()){
+        //         auto argLoad = builder->create_load(arg);
+        //         argLoad = 
+        //         arg = builder->create_sitofp(arg,FLOAT_T);
+        //     }
+        //     else if(callfun->get_param_type(i)->get_pointer_element_type()->is_integer_type()&&arg->get_type()->is_float_type()){
+        //         arg = builder->create_fptosi(arg,INT32_T);
+        //     }
+        // }
         else{}
         args.push_back(arg);
     }
