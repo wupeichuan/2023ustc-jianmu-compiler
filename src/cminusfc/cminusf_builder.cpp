@@ -139,7 +139,7 @@ Value* CminusfBuilder::visit(ASTCompoundStmt &node) {
     // TODO: This function is not complete.
     // You may need to add some code here
     // to deal with complex statements.
-
+    scope.enter();
     for (auto &decl : node.local_declarations) {
         decl->accept(*this);
     }
@@ -149,15 +149,14 @@ Value* CminusfBuilder::visit(ASTCompoundStmt &node) {
         if (builder->get_insert_block()->is_terminated())
             break;
     }
+    scope.exit();
     return nullptr;
 }
 
 Value* CminusfBuilder::visit(ASTExpressionStmt &node) {
     // TODO: This function is empty now.
     // Add some code here.
-    context._varstate.push_back(context.load);
     auto pressionLoad = node.expression->accept(*this);
-    context._varstate.pop_back();
     return pressionLoad;                        
     //must remove the $PATH cminusfc
 }
@@ -178,12 +177,14 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
         builder->set_insert_point(trueBB);
         scope.enter();
         node.if_statement->accept(*this);
-        builder->create_br(brBB);
+        if(builder->get_insert_block()->is_terminated()==false)
+            builder->create_br(brBB);
         scope.exit();
         builder->set_insert_point(falseBB);
         scope.enter();
         node.else_statement->accept(*this);  
-        builder->create_br(brBB);  
+        if(builder->get_insert_block()->is_terminated()==false)
+            builder->create_br(brBB); 
         scope.exit();
         builder->set_insert_point(brBB);    
     }
@@ -194,7 +195,8 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
         builder->set_insert_point(trueBB);
         scope.enter();
         node.if_statement->accept(*this);
-        builder->create_br(brBB);
+        if(builder->get_insert_block()->is_terminated()==false)
+            builder->create_br(brBB);
         scope.exit();
         builder->set_insert_point(brBB); 
     }
@@ -216,12 +218,14 @@ Value* CminusfBuilder::visit(ASTIterationStmt &node) {
     scope.enter();
     node.statement->accept(*this);
     scope.exit();
-    expressionLoad = node.expression->accept(*this);
-    if(expressionLoad->get_type()->is_float_type())
-        expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
-    else if(expressionLoad->get_type()->is_int32_type())
-        expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
-    builder->create_cond_br(expressionLoad,trueBB,brBB);
+    if(builder->get_insert_block()->is_terminated()==false){
+        expressionLoad = node.expression->accept(*this);
+        if(expressionLoad->get_type()->is_float_type())
+            expressionLoad = builder->create_fcmp_ne(expressionLoad,ConstantFP::get(0,module.get()));
+        else if(expressionLoad->get_type()->is_int32_type())
+            expressionLoad = builder->create_icmp_ne(expressionLoad,ConstantInt::get(0,module.get()));
+        builder->create_cond_br(expressionLoad,trueBB,brBB);
+    }
     builder->set_insert_point(brBB);
     return nullptr;
 }
@@ -320,7 +324,7 @@ Value* CminusfBuilder::visit(ASTAssignExpression &node) {
     }
     else{}
     builder->create_store(expressionLoad,varAlloca);
-    return nullptr;
+    return expressionLoad;
 }
 
 Value* CminusfBuilder::visit(ASTSimpleExpression &node) {
@@ -471,7 +475,9 @@ Value* CminusfBuilder::visit(ASTSimpleExpression &node) {
 Value* CminusfBuilder::visit(ASTAdditiveExpression &node) {
     // TODO: This function is empty now.
     // Add some code here.
+    context._varstate.push_back(context.load);
     auto termLoad = node.term->accept(*this);
+    context._varstate.pop_back();
     if(node.additive_expression==nullptr){
         return termLoad;
     }
@@ -579,6 +585,7 @@ Value* CminusfBuilder::visit(ASTCall &node) {
     std::vector<Value*> args;
     auto func = scope.find(node.id);
     auto callfun = static_cast<FunctionType*>(func->get_type());
+    
     for(long unsigned int i = 0; i < node.args.size(); ++i){
         auto arg = node.args[i]->accept(*this);
         if(callfun->get_param_type(i)->is_integer_type()&&arg->get_type()->is_float_type()){
