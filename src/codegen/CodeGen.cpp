@@ -313,11 +313,17 @@ void CodeGen::gen_load() {
     if (type->is_float_type()) {
         append_inst("fld.s $ft0, $t0, 0");
         store_from_freg(context.inst, FReg::ft(0));
-    } else {
+    } 
+    // the code below should distinguish "ld.w" and "ld.d"
+    else if(type->is_int32_type()){
         // TODO load 整数类型的数据
         append_inst("ld.w $t0, $t0, 0");
         store_from_greg(context.inst, Reg::t(0));
         //throw not_implemented_error{__FUNCTION__};
+    }
+    else{
+        append_inst("ld.d $t0, $t0, 0");
+        store_from_greg(context.inst, Reg::t(0));
     }
 }
 
@@ -330,10 +336,16 @@ void CodeGen::gen_store() {
         output.emplace_back("movfr2gr.s $t2, $ft0");
         output.emplace_back("st.w $t2, $t1, 0");
     }
-    else{
+    // the code below should distinguish "st.w" and "st.d"
+    else if(type->is_int32_type()){ 
         load_to_greg(context.inst->get_operand(0), Reg::t(0));
         load_to_greg(context.inst->get_operand(1), Reg::t(1));
         output.emplace_back("st.w $t0, $t1, 0");
+    }
+    else{
+        load_to_greg(context.inst->get_operand(0), Reg::t(0));
+        load_to_greg(context.inst->get_operand(1), Reg::t(1));
+        output.emplace_back("st.d $t0, $t1, 0");
     }
     //throw not_implemented_error{__FUNCTION__};
 }
@@ -488,11 +500,21 @@ void CodeGen::gen_call() {
 
 void CodeGen::gen_gep() {
     // TODO 计算内存地址
-    load_to_greg(context.inst->get_operand(0), Reg::t(0));
-    output.emplace_back("ld.d $t0, $t0, 0");
-    auto index = dynamic_cast<ConstantInt *>(context.inst->get_operand(1));
-    output.emplace_back("addi.w $t0, $t0, " + std::to_string(index->get_value() * 4));
-    store_from_greg(context.inst, Reg::t(0));
+    load_to_greg(context.inst->get_operand(0), Reg::t(3));
+    if(context.inst->get_operand(0)->get_type()->get_pointer_element_type()->is_array_type()){
+        load_to_greg(context.inst->get_operand(2), Reg::t(0));
+        output.emplace_back("addi.w $t1, $zero, 4");
+        output.emplace_back("mul.w $t2, $t0, $t1");
+        output.emplace_back("add.d $t3, $t3, $t2");
+        store_from_greg(context.inst, Reg::t(3));
+    }
+    else{
+        load_to_greg(context.inst->get_operand(1), Reg::t(0));
+        output.emplace_back("addi.w $t1, $zero, 4");
+        output.emplace_back("mul.w $t2, $t0, $t1");
+        output.emplace_back("add.d $t3, $t3, $t2");
+        store_from_greg(context.inst, Reg::t(3));
+    }
     //throw not_implemented_error{__FUNCTION__};
 }
 
