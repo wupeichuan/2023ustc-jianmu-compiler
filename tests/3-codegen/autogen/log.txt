@@ -1,0 +1,81 @@
+==========./testcases/0-io.cminus==========
+1234								1234
+0								0
+==========./testcases/1-return.cminus==========
+111								111
+111								111
+==========./testcases/2-calculate.cminus==========
+123								123
+==========./testcases/3-output.cminus==========
+11								11
+22222								22222
+0								0
+==========./testcases/4-if.cminus==========
+33								33
+0								0
+==========./testcases/5-while.cminus==========
+0								0
+1								1
+2								2
+3								3
+4								4
+5								5
+6								6
+7								7
+8								8
+9								9
+0								0
+==========./testcases/6-array.cminus==========
+11							      |	139
+22							      <
+33							      <
+0							      <
+==========./testcases/7-function.cminus==========
+11								11
+22								22
+11								11
+0								0
+==========./testcases/8-store.cminus==========
+==========./testcases/9-fibonacci.cminus==========
+0								0
+1								1
+1								1
+2								2
+3								3
+5								5
+8								8
+13								13
+21								21
+34								34
+0								0
+==========./testcases/10-float.cminus==========
+2.850000							2.850000
+0								0
+==========./testcases/11-floatcall.cminus==========
+0.200000							0.200000
+0								0
+==========./testcases/12-global.cminus==========
+4								4
+2								2
+2								2
+4								4
+8								8
+2								2
+2								2
+2								2
+2								2
+2								2
+6								6
+2								2
+10								10
+8								8
+4								4
+2								2
+20								20
+2								2
+2								2
+8								8
+0								0
+==========./testcases/13-complex.cminus==========
+15							      |	139
+0							      <
