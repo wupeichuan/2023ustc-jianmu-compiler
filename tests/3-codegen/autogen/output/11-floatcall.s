@@ -10,24 +10,27 @@ mod:
 	fst.s $fa1, $fp, -24
 .mod_label_entry:
 # %op2 = alloca float
-	addi.d $t0, $fp, -36
-	st.d $t0, $fp, -32
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store float %arg0, float* %op2
 	fld.s $ft0, $fp, -20
 	ld.d $t1, $fp, -32
 	movfr2gr.s $t2, $ft0
 	st.w $t2, $t1, 0
 # %op3 = alloca float
-	addi.d $t0, $fp, -52
-	st.d $t0, $fp, -48
+	addi.d $t8, $fp, -52
+	addi.d $t7, $fp, -48
+	st.d $t8, $t7, 0
 # store float %arg1, float* %op3
 	fld.s $ft0, $fp, -24
 	ld.d $t1, $fp, -48
 	movfr2gr.s $t2, $ft0
 	st.w $t2, $t1, 0
 # %op4 = alloca i32
-	addi.d $t0, $fp, -68
-	st.d $t0, $fp, -64
+	addi.d $t8, $fp, -68
+	addi.d $t7, $fp, -64
+	st.d $t8, $t7, 0
 # %op5 = load float, float* %op3
 	ld.d $t0, $fp, -48
 	fld.s $ft0, $t0, 0
@@ -94,11 +97,13 @@ main:
 	addi.d $sp, $sp, -64
 .main_label_entry:
 # %op0 = alloca float
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = alloca float
-	addi.d $t0, $fp, -44
-	st.d $t0, $fp, -40
+	addi.d $t8, $fp, -44
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
 # store float 0x4026666660000000, float* %op0
 	lu12i.w $t8, 267059
 	ori $t8, $t8, 819

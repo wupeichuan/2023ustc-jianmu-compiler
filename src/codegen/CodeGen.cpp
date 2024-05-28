@@ -300,8 +300,23 @@ void CodeGen::gen_alloca() {
     auto *alloca_inst = static_cast<AllocaInst *>(context.inst);
     auto alloc_size = alloca_inst->get_alloca_type()->get_size();
     int size = (int)alloc_size;
-    output.emplace_back("addi.d $t0, $fp, " + std::to_string((offset - size)));
-    output.emplace_back("st.d $t0, $fp, " + std::to_string(offset));
+    if(IS_IMM_12(offset - size)){
+        output.emplace_back("addi.d $t8, $fp, " + std::to_string(offset - size));
+    } 
+    else{
+        auto addr8 = Reg::t(8);
+        load_large_int64(offset - size, addr8);
+        output.emplace_back("add.d $t8, $fp, $t8");
+    }
+    if(IS_IMM_12(offset)){
+        output.emplace_back("addi.d $t7, $fp, " + std::to_string(offset));
+    } 
+    else{
+        auto addr7 = Reg::t(7);
+        load_large_int64(offset, addr7);
+        output.emplace_back("add.d $t7, $fp, $t7");
+    }
+    output.emplace_back("st.d $t8, $t7, 0");
     //throw not_implemented_error{__FUNCTION__};
 }
 
@@ -403,62 +418,62 @@ void CodeGen::gen_fcmp() {
     switch (context.inst->get_instr_type()) {
     case Instruction::fge:
         output.emplace_back("fcmp.sle.s $fcc0, $ft1, $ft0");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+        output.emplace_back("bcnez $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
     case Instruction::fgt:
         output.emplace_back("fcmp.slt.s $fcc0, $ft1, $ft0");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+        output.emplace_back("bcnez $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
     case Instruction::fle:
         output.emplace_back("fcmp.sle.s $fcc0, $ft0, $ft1");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+        output.emplace_back("bcnez $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
     case Instruction::flt:
-        output.emplace_back("fcmp.slt.s $fcc0, $ft1, $ft0");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+        output.emplace_back("fcmp.slt.s $fcc0, $ft0, $ft1");
+        output.emplace_back("bcnez $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
     case Instruction::feq:
-        output.emplace_back("fcmp.seq.s $fcc0, $ft1, $ft0");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+        output.emplace_back("fcmp.seq.s $fcc0, $ft0, $ft1");
+        output.emplace_back("bceqz $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
-    case Instruction::ne:
-        output.emplace_back("fcmp.sne.s $fcc0, $ft1, $ft0");
-        output.emplace_back("bcnez $fcc0, 2");
-        output.emplace_back("b 3");
+    case Instruction::fne:
+        output.emplace_back("fcmp.sne.s $fcc0, $ft0, $ft1");
+        output.emplace_back("bcnez $fcc0, 8");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 1");
-        output.emplace_back("b 3");
+        output.emplace_back("b 12");
         output.emplace_back("addi.w $t0, $zero, 0");
-        output.emplace_back("b 1");
+        output.emplace_back("b 4");
         store_from_greg(context.inst, Reg::t(0));
         break;
     default:

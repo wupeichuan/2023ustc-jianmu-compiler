@@ -8,11 +8,13 @@ main:
 	addi.d $sp, $sp, -176
 .main_label_entry:
 # %op0 = alloca [10 x i32]
-	addi.d $t0, $fp, -64
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -64
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = alloca i32
-	addi.d $t0, $fp, -76
-	st.d $t0, $fp, -72
+	addi.d $t8, $fp, -76
+	addi.d $t7, $fp, -72
+	st.d $t8, $t7, 0
 # store i32 0, i32* %op1
 	addi.w $t0, $zero, 0
 	ld.d $t1, $fp, -72

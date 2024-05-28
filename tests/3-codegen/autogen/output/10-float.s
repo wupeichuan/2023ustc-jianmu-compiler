@@ -8,14 +8,17 @@ main:
 	addi.d $sp, $sp, -80
 .main_label_entry:
 # %op0 = alloca float
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = alloca float
-	addi.d $t0, $fp, -44
-	st.d $t0, $fp, -40
+	addi.d $t8, $fp, -44
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
 # %op2 = alloca float
-	addi.d $t0, $fp, -60
-	st.d $t0, $fp, -56
+	addi.d $t8, $fp, -60
+	addi.d $t7, $fp, -56
+	st.d $t8, $t7, 0
 # store float 0x3ff19999a0000000, float* %op0
 	lu12i.w $t8, 260300
 	ori $t8, $t8, 3277

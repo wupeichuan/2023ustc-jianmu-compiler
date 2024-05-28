@@ -1,83 +1,42 @@
-==========./testcases/0-io.cminus==========
-1234								1234
+==========../../testcases_general/1-return.cminus==========
 0								0
-==========./testcases/1-return.cminus==========
-111								111
-111								111
-==========./testcases/2-calculate.cminus==========
-123								123
-==========./testcases/3-output.cminus==========
-11								11
-22222								22222
+==========../../testcases_general/2-decl_int.cminus==========
 0								0
-==========./testcases/4-if.cminus==========
-33								33
+==========../../testcases_general/3-decl_float.cminus==========
 0								0
-==========./testcases/5-while.cminus==========
+==========../../testcases_general/4-decl_int_array.cminus==========
 0								0
-1								1
-2								2
-3								3
-4								4
+==========../../testcases_general/5-decl_float_array.cminus==========
+0								0
+==========../../testcases_general/6-num_add_int.cminus==========
+210								210
+==========../../testcases_general/7-assign_int_var_local.cminus==========
+210								210
+==========../../testcases_general/8-assign_int_array_local.cminus==========
+210								210
+==========../../testcases_general/9-assign_cast.cminus==========
 5								5
-6								6
-7								7
-8								8
-9								9
+==========../../testcases_general/10-funcall.cminus==========
 0								0
-==========./testcases/6-array.cminus==========
-11								11
-22								22
-33								33
+==========../../testcases_general/11-funcall_chain.cminus==========
+210								210
+==========../../testcases_general/12-funcall_recursion.cminus==========
 0								0
-==========./testcases/7-function.cminus==========
-11								11
-22								22
-11								11
+==========../../testcases_general/13-if_stmt.cminus==========
 0								0
-==========./testcases/8-store.cminus==========
-90								90
+==========../../testcases_general/14-while_stmt.cminus==========
 0								0
-==========./testcases/9-fibonacci.cminus==========
-0								0
-1								1
-1								1
-2								2
+==========../../testcases_general/15-if_while.cminus==========
+45								45
+==========../../testcases_general/16-if_chain.cminus==========
 3								3
-5								5
-8								8
-13								13
-21								21
-34								34
+==========../../testcases_general/17-while_chain.cminus==========
 0								0
-==========./testcases/10-float.cminus==========
-2.850000							2.850000
-0								0
-==========./testcases/11-floatcall.cminus==========
-0.200000							0.200000
-0								0
-==========./testcases/12-global.cminus==========
-4								4
-2								2
-2								2
-4								4
-8								8
-2								2
-2								2
-2								2
-2								2
-2								2
-6								6
-2								2
+==========../../testcases_general/18-global_var.cminus==========
 10								10
-8								8
-4								4
-2								2
+==========../../testcases_general/19-global_local_var.cminus==========
 20								20
-2								2
-2								2
-8								8
-0								0
-==========./testcases/13-complex.cminus==========
-15								15
+==========../../testcases_general/20-gcd_array.cminus==========
+18								18
+==========../../testcases_general/21-comment.cminus==========
 0								0

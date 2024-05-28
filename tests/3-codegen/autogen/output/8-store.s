@@ -11,22 +11,25 @@ store:
 	st.w $a2, $fp, -32
 .store_label_entry:
 # %op3 = alloca i32*
-	addi.d $t0, $fp, -48
-	st.d $t0, $fp, -40
+	addi.d $t8, $fp, -48
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
 # store i32* %arg0, i32** %op3
 	ld.d $t0, $fp, -24
 	ld.d $t1, $fp, -40
 	st.d $t0, $t1, 0
 # %op4 = alloca i32
-	addi.d $t0, $fp, -60
-	st.d $t0, $fp, -56
+	addi.d $t8, $fp, -60
+	addi.d $t7, $fp, -56
+	st.d $t8, $t7, 0
 # store i32 %arg1, i32* %op4
 	ld.w $t0, $fp, -28
 	ld.d $t1, $fp, -56
 	st.w $t0, $t1, 0
 # %op5 = alloca i32
-	addi.d $t0, $fp, -76
-	st.d $t0, $fp, -72
+	addi.d $t8, $fp, -76
+	addi.d $t7, $fp, -72
+	st.d $t8, $t7, 0
 # store i32 %arg2, i32* %op5
 	ld.w $t0, $fp, -32
 	ld.d $t1, $fp, -72
@@ -97,14 +100,17 @@ main:
 	addi.d $sp, $sp, -208
 .main_label_entry:
 # %op0 = alloca [10 x i32]
-	addi.d $t0, $fp, -64
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -64
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = alloca i32
-	addi.d $t0, $fp, -76
-	st.d $t0, $fp, -72
+	addi.d $t8, $fp, -76
+	addi.d $t7, $fp, -72
+	st.d $t8, $t7, 0
 # %op2 = alloca i32
-	addi.d $t0, $fp, -92
-	st.d $t0, $fp, -88
+	addi.d $t8, $fp, -92
+	addi.d $t7, $fp, -88
+	st.d $t8, $t7, 0
 # store i32 0, i32* %op1
 	addi.w $t0, $zero, 0
 	ld.d $t1, $fp, -72

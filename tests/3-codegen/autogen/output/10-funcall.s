@@ -9,8 +9,9 @@ test:
 	st.w $a0, $fp, -20
 .test_label_entry:
 # %op1 = alloca i32
-	addi.d $t0, $fp, -36
-	st.d $t0, $fp, -32
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op1
 	ld.w $t0, $fp, -20
 	ld.d $t1, $fp, -32
@@ -32,8 +33,9 @@ main:
 	addi.d $sp, $sp, -32
 .main_label_entry:
 # %op0 = alloca i32
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # store i32 10, i32* %op0
 	addi.w $t0, $zero, 10
 	ld.d $t1, $fp, -24

@@ -598,7 +598,7 @@ Value* CminusfBuilder::visit(ASTCall &node) {
             if(arg->get_type()->is_int1_type()) arg = builder->create_zext(arg,INT32_T);
         }
         else if(callfun->get_param_type(i)->is_pointer_type()&&arg->get_type()->get_pointer_element_type()->is_array_type()){
-            //it is very hard "arg->get_type()->get_pointer_element_type()->is_array_type()"
+            //it is so hard "arg->get_type()->get_pointer_element_type()->is_array_type()"
             arg = builder->create_gep(arg,{ConstantInt::get(0,module.get()),ConstantInt::get(0,module.get())});
         }
         else{}

@@ -8,8 +8,9 @@ main:
 	addi.d $sp, $sp, -64
 .main_label_entry:
 # %op0 = alloca [10 x float]
-	addi.d $t0, $fp, -64
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -64
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # ret void
 	addi.w $a0, $zero, 0
 	b main_exit

@@ -38,15 +38,17 @@ max:
 	st.w $a1, $fp, -24
 .max_label_entry:
 # %op2 = alloca i32
-	addi.d $t0, $fp, -36
-	st.d $t0, $fp, -32
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op2
 	ld.w $t0, $fp, -20
 	ld.d $t1, $fp, -32
 	st.w $t0, $t1, 0
 # %op3 = alloca i32
-	addi.d $t0, $fp, -52
-	st.d $t0, $fp, -48
+	addi.d $t8, $fp, -52
+	addi.d $t7, $fp, -48
+	st.d $t8, $t7, 0
 # store i32 %arg1, i32* %op3
 	ld.w $t0, $fp, -24
 	ld.d $t1, $fp, -48
@@ -104,22 +106,25 @@ knapsack:
 	st.w $a1, $fp, -24
 .knapsack_label_entry:
 # %op2 = alloca i32
-	addi.d $t0, $fp, -36
-	st.d $t0, $fp, -32
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op2
 	ld.w $t0, $fp, -20
 	ld.d $t1, $fp, -32
 	st.w $t0, $t1, 0
 # %op3 = alloca i32
-	addi.d $t0, $fp, -52
-	st.d $t0, $fp, -48
+	addi.d $t8, $fp, -52
+	addi.d $t7, $fp, -48
+	st.d $t8, $t7, 0
 # store i32 %arg1, i32* %op3
 	ld.w $t0, $fp, -24
 	ld.d $t1, $fp, -48
 	st.w $t0, $t1, 0
 # %op4 = alloca i32
-	addi.d $t0, $fp, -68
-	st.d $t0, $fp, -64
+	addi.d $t8, $fp, -68
+	addi.d $t7, $fp, -64
+	st.d $t8, $t7, 0
 # %op5 = load i32, i32* %op3
 	ld.d $t0, $fp, -48
 	ld.w $t0, $t0, 0
@@ -581,8 +586,9 @@ main:
 	addi.d $sp, $sp, -256
 .main_label_entry:
 # %op0 = alloca i32
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # store i32 0, i32* %op0
 	addi.w $t0, $zero, 0
 	ld.d $t1, $fp, -24

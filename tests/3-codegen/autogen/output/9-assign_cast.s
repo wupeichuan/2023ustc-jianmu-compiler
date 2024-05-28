@@ -8,11 +8,13 @@ main:
 	addi.d $sp, $sp, -80
 .main_label_entry:
 # %op0 = alloca i32
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = alloca i32
-	addi.d $t0, $fp, -44
-	st.d $t0, $fp, -40
+	addi.d $t8, $fp, -44
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
 # %op2 = icmp slt i32 1, 3
 	addi.w $t0, $zero, 1
 	addi.w $t1, $zero, 3

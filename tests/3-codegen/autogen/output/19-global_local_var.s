@@ -36,8 +36,9 @@ main:
 	addi.d $sp, $sp, -32
 .main_label_entry:
 # %op0 = alloca i32
-	addi.d $t0, $fp, -28
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # call void @GlobalAssign()
 	bl GlobalAssign
 # store i32 20, i32* %op0

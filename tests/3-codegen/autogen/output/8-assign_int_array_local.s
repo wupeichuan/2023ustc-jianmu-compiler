@@ -8,8 +8,9 @@ main:
 	addi.d $sp, $sp, -112
 .main_label_entry:
 # %op0 = alloca [10 x i32]
-	addi.d $t0, $fp, -64
-	st.d $t0, $fp, -24
+	addi.d $t8, $fp, -64
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
 # %op1 = icmp sge i32 3, 0
 	addi.w $t0, $zero, 3
 	addi.w $t1, $zero, 0

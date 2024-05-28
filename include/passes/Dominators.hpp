@@ -2,6 +2,7 @@
 
 #include "BasicBlock.hpp"
 #include "PassManager.hpp"
+#include <algorithm>
 
 #include <map>
 #include <set>

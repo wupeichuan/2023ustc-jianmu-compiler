@@ -23,15 +23,17 @@ gcd:
 	st.w $a1, $fp, -24
 .gcd_label_entry:
 # %op2 = alloca i32
-	addi.d $t0, $fp, -36
-	st.d $t0, $fp, -32
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op2
 	ld.w $t0, $fp, -20
 	ld.d $t1, $fp, -32
 	st.w $t0, $t1, 0
 # %op3 = alloca i32
-	addi.d $t0, $fp, -52
-	st.d $t0, $fp, -48
+	addi.d $t8, $fp, -52
+	addi.d $t7, $fp, -48
+	st.d $t8, $t7, 0
 # store i32 %arg1, i32* %op3
 	ld.w $t0, $fp, -24
 	ld.d $t1, $fp, -48
@@ -123,28 +125,33 @@ funArray:
 	st.d $a1, $fp, -32
 .funArray_label_entry:
 # %op2 = alloca i32*
-	addi.d $t0, $fp, -48
-	st.d $t0, $fp, -40
+	addi.d $t8, $fp, -48
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
 # store i32* %arg0, i32** %op2
 	ld.d $t0, $fp, -24
 	ld.d $t1, $fp, -40
 	st.d $t0, $t1, 0
 # %op3 = alloca i32*
-	addi.d $t0, $fp, -64
-	st.d $t0, $fp, -56
+	addi.d $t8, $fp, -64
+	addi.d $t7, $fp, -56
+	st.d $t8, $t7, 0
 # store i32* %arg1, i32** %op3
 	ld.d $t0, $fp, -32
 	ld.d $t1, $fp, -56
 	st.d $t0, $t1, 0
 # %op4 = alloca i32
-	addi.d $t0, $fp, -76
-	st.d $t0, $fp, -72
+	addi.d $t8, $fp, -76
+	addi.d $t7, $fp, -72
+	st.d $t8, $t7, 0
 # %op5 = alloca i32
-	addi.d $t0, $fp, -92
-	st.d $t0, $fp, -88
+	addi.d $t8, $fp, -92
+	addi.d $t7, $fp, -88
+	st.d $t8, $t7, 0
 # %op6 = alloca i32
-	addi.d $t0, $fp, -108
-	st.d $t0, $fp, -104
+	addi.d $t8, $fp, -108
+	addi.d $t7, $fp, -104
+	st.d $t8, $t7, 0
 # %op7 = icmp sge i32 0, 0
 	addi.w $t0, $zero, 0
 	addi.w $t1, $zero, 0
