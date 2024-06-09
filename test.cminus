@@ -1,0 +1,14 @@
+int main(void){
+    int i;
+    int N;
+    int j;
+    i=0;
+    N=10;
+    j=0;
+    while(i<N){
+        i=i+1;
+        j=i+2;
+    }
+    output(i);
+    output(j);
+}
