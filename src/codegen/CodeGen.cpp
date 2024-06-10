@@ -1901,12 +1901,12 @@ void CodeGen::create_graph(BasicBlock* bb){
                                 node_to->val.insert(&inst);
                                 node_from->succ.insert(node_to);
                                 node_to->pre.insert(node_from);
-                                node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                                node_from->pair[node_to].push_back({(&inst)->get_operand(2*i),&inst});
                             }
                             else{
                                 node_from->succ.insert(node_from);
                                 node_from->pre.insert(node_from);
-                                node_from->pair[node_from].push_back({(&inst)->get_operand(2*i+1),&inst});
+                                node_from->pair[node_from].push_back({(&inst)->get_operand(2*i),&inst});
                             }
                         }
                         else if(node_from!=nullptr&&node_to==nullptr){
@@ -1915,7 +1915,7 @@ void CodeGen::create_graph(BasicBlock* bb){
                             node_to->val.insert(&inst);
                             node_from->succ.insert(node_to);
                             node_to->pre.insert(node_from);
-                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i),&inst});
                         }
                         else if(node_from==nullptr&&node_to!=nullptr){
                             node_from = std::make_shared<struct Node>();
@@ -1924,7 +1924,7 @@ void CodeGen::create_graph(BasicBlock* bb){
                             graph_start->succ.insert(node_from);
                             node_from->succ.insert(node_to);
                             node_to->pre.insert(node_from);
-                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i),&inst});
                             if(graph_start->succ.count(node_to)>0){
                                 graph_start->succ.erase(node_to);
                             }
@@ -1932,7 +1932,7 @@ void CodeGen::create_graph(BasicBlock* bb){
                         else{
                             node_from->val.insert((&inst)->get_operand(2*i));
                             node_to->val.insert(&inst);
-                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i),&inst});
                             if(node_from->succ.count(node_to)==0){
                                 node_from->succ.insert(node_to);
                                 node_to->pre.insert(node_from);
@@ -1966,112 +1966,58 @@ void CodeGen::phi_resort(BasicBlock* bb){
             }
             else if(stack.back()->pre.size()==1){
                 auto pre_node = *(stack.back()->pre.begin());
+                auto succ_node = stack.back();
                 Value* pre_val;
                 Value* succ_val;
-                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
-                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
-                        pre_val = *iter;
-                        break;
-                    }
-                    else{
-                        auto iter_val = dynamic_cast<Instruction*>(*iter);
-                        if(iter_val->get_parent()==bb){
-                            pre_val = *iter;
-                            break;
+                auto iter = pre_node->pair[succ_node].begin();
+                if(pre_node->pair[succ_node].size()>1){
+                    for(; iter!=pre_node->pair[succ_node].end(); iter++){
+                        auto iiter = (*iter).begin();
+                        iiter++;
+                        auto iter_val = dynamic_cast<Instruction*>(*iiter);
+                        if(iter_val->get_parent()==bb_true){
+                            pre_val = *((*iter).begin());
+                            succ_val = iter_val;
                         }
                     }
                 }
-                for(auto iter=stack.back()->val.begin(); iter!=stack.back()->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()!=bb){
-                        succ_val=*iter;
-                        if(iter_val->get_parent()==bb_true) break;
-                    }
+                else{
+                    pre_val = *(*iter).begin();
+                    auto iiter = (*iter).begin(); iiter++;
+                    succ_val = *iiter;
                 }
                 auto iter_val = dynamic_cast<Instruction*>(succ_val);
                 if(iter_val->get_parent()==bb_true)
                     true_val_move.push_back({pre_val,succ_val});
                 else
                     false_val_move.push_back({pre_val,succ_val});
-                stack.back()->pre.clear();
-                pre_node->succ.erase(stack.back());
+                succ_node->pre.erase(pre_node);
+                pre_node->succ.erase(succ_node);
+                pre_node->pair.erase(succ_node);
             }
             else{
-                auto* succ_val_1 = dynamic_cast<Instruction*>(*(stack.back()->val.begin()));
-                auto* succ_val_2 = dynamic_cast<Instruction*>(*(stack.back()->val.end()));
                 auto pre_node_1 = *(stack.back()->pre.begin());
                 auto pre_node_2 = *(stack.back()->pre.end());
-                std::set<Value*> pre_val_1_set;
-                std::set<Value*> pre_val_2_set;
-                Value* pre_val_1;
-                Value* pre_val_2;
-                for(auto iter=pre_node_1->val.begin(); iter!=pre_node_1->val.end(); iter++){
-                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
-                        pre_val_1_set.insert(*iter);
-                        break;
-                    }
-                    else{
-                        auto iter_val = dynamic_cast<Instruction*>(*iter);
-                        if(iter_val->get_parent()==bb){
-                            pre_val_1_set.insert(*iter);
-                            break;
-                        }
-                    }
-                }
-                for(auto iter=pre_node_2->val.begin(); iter!=pre_node_2->val.end(); iter++){
-                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
-                        pre_val_2_set.insert(*iter);
-                        break;
-                    }
-                    else{
-                        auto iter_val = dynamic_cast<Instruction*>(*iter);
-                        if(iter_val->get_parent()==bb){
-                            pre_val_2_set.insert(*iter);
-                            break;
-                        }
-                    }
-                }
-                bool is_true = false;
-                for(long unsigned int i=0;i<succ_val_1->get_num_operand()/2;i++){
-                    if(pre_val_1_set.count(succ_val_1->get_operand(2*i))>0&&succ_val_1->get_operand(2*i+1)==bb){
-                        pre_val_1 = succ_val_1->get_operand(2*i);
-                        is_true = true;
-                        break;
-                    }
-                }
-                if(is_true){
-                    for(long unsigned int i=0;i<succ_val_2->get_num_operand()/2;i++){
-                    if(pre_val_2_set.count(succ_val_2->get_operand(2*i))>0&&succ_val_2->get_operand(2*i+1)==bb){
-                        pre_val_2 = succ_val_2->get_operand(2*i);
-                        break;
-                    }
-                    }
+                auto succ_node = stack.back();
+                Value* pre_val_1 = *(*pre_node_1->pair[succ_node].begin()).begin();
+                Value* succ_val_1 = *(*pre_node_1->pair[succ_node].begin()).end();
+                Value* pre_val_2 = *(*pre_node_2->pair[succ_node].begin()).begin();
+                Value* succ_val_2 = *(*pre_node_1->pair[succ_node].begin()).end();
+                auto iter_val = dynamic_cast<Instruction*>(succ_val_1);
+                if(iter_val->get_parent()==bb_true){
+                    true_val_move.push_back({pre_val_1,succ_val_1});
+                    false_val_move.push_back({pre_val_2,succ_val_2});
                 }
                 else{
-                    for(long unsigned int i=0;i<succ_val_1->get_num_operand()/2;i++){
-                    if(pre_val_2_set.count(succ_val_1->get_operand(2*i))>0&&succ_val_1->get_operand(2*i+1)==bb){
-                        pre_val_2 = succ_val_1->get_operand(2*i);
-                        break;
-                    }
-                    }
-                    for(long unsigned int i=0;i<succ_val_2->get_num_operand()/2;i++){
-                    if(pre_val_1_set.count(succ_val_2->get_operand(2*i))>0&&succ_val_2->get_operand(2*i+1)==bb){
-                        pre_val_1 = succ_val_2->get_operand(2*i);
-                        break;
-                    }
-                    }
+                    true_val_move.push_back({pre_val_2,succ_val_2});
+                    false_val_move.push_back({pre_val_1,succ_val_1});
                 }
-                if(bb_true==succ_val_1->get_parent()){
-                    if(is_true){ true_val_move.push_back({pre_val_1,succ_val_1}); false_val_move.push_back({pre_val_2,succ_val_2});}
-                    else { true_val_move.push_back({pre_val_2,succ_val_1}); false_val_move.push_back({pre_val_1,succ_val_2}); }
-                }
-                else{
-                    if(is_true){ true_val_move.push_back({pre_val_2,succ_val_2}); false_val_move.push_back({pre_val_1,succ_val_1});}
-                    else { true_val_move.push_back({pre_val_1,succ_val_2}); false_val_move.push_back({pre_val_2,succ_val_1}); }
-                }
-                stack.back()->pre.clear();
-                pre_node_1->succ.erase(stack.back());
-                pre_node_2->succ.erase(stack.back());
+                succ_node->pre.erase(pre_node_1);
+                succ_node->pre.erase(pre_node_2);
+                pre_node_1->succ.erase(succ_node);
+                pre_node_1->pair.erase(succ_node);
+                pre_node_2->succ.erase(succ_node);
+                pre_node_2->pair.erase(succ_node);
             }
         }
         else{
@@ -2089,31 +2035,31 @@ void CodeGen::phi_resort(BasicBlock* bb){
                     auto node = stack.back();
                     Value* pre_val;
                     Value* succ_val;
-                    for(auto iter=node->val.begin(); iter!=node->val.end(); iter++){
-                        auto iter_val = dynamic_cast<Instruction*>(*iter);
-                        if(iter_val->get_parent()==bb){
-                            pre_val = *iter;
-                            break;
-                        }
-                    }
-                    for(auto iter=node->val.begin(); iter!=node->val.end(); iter++){
-                        auto iter_val = dynamic_cast<Instruction*>(*iter);
-                        for(long unsigned int i=0; i<iter_val->get_num_operand()/2;i++){
-                            if(iter_val->get_operand(2*i)==pre_val){
-                                succ_val=*iter;
-                                break;
+                    auto iter = node->pair[node].begin();
+                    if(node->pair[node].size()>1){
+                        for(; iter!=node->pair[node].end(); iter++){
+                            auto iiter = (*iter).begin();
+                            iiter++;
+                            auto iter_val = dynamic_cast<Instruction*>(*iiter);
+                            if(iter_val->get_parent()==bb_true){
+                                pre_val = *((*iter).begin());
+                                succ_val = iter_val;
                             }
                         }
                     }
-                    auto iter_val = dynamic_cast<Instruction*>(succ_val);
-                    if(iter_val->get_parent()==bb_true){
-                        true_val_move.push_back({pre_val,succ_val});
-                    }
                     else{
-                        false_val_move.push_back({pre_val,succ_val});
+                        pre_val = *(*iter).begin();
+                        auto iiter = (*iter).begin();iiter++;
+                        succ_val = *iiter;
                     }
+                    auto iter_val = dynamic_cast<Instruction*>(succ_val);
+                    if(iter_val->get_parent()==bb_true)
+                        true_val_move.push_back({pre_val,succ_val});
+                    else
+                        false_val_move.push_back({pre_val,succ_val});
                     node->pre.erase(node);
                     node->succ.erase(node);
+                    node->pair.erase(node);
                 }
             }
             else{
@@ -2121,19 +2067,22 @@ void CodeGen::phi_resort(BasicBlock* bb){
                 auto succ_node = *(stack.back()->succ.begin());
                 Value* pre_val; 
                 Value* succ_val;
-                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()==bb){
-                        pre_val = *iter;
-                        break;
+                auto iter = pre_node->pair[succ_node].begin();
+                if(pre_node->pair[pre_node].size()>1){
+                    for(; iter!=pre_node->pair[pre_node].end(); iter++){
+                        auto iiter = (*iter).begin();
+                        iiter++;
+                        auto iter_val = dynamic_cast<Instruction*>(*iiter);
+                        if(iter_val->get_parent()==bb_true){
+                            pre_val = *((*iter).begin());
+                            succ_val = iter_val;
+                        }
                     }
                 }
-                for(auto iter=succ_node->val.begin(); iter!=succ_node->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()!=bb){
-                        succ_val=*iter;
-                        if(iter_val->get_parent()==bb_true) break;
-                    }
+                else{
+                    pre_val = *(*iter).begin();
+                    auto iiter = (*iter).begin();iiter++;
+                    succ_val = *iiter;
                 }
                 loop_save.insert(succ_val);
                 auto iter_val = dynamic_cast<Instruction*>(succ_val);
@@ -2147,6 +2096,7 @@ void CodeGen::phi_resort(BasicBlock* bb){
                 }
                 succ_node->pre.erase(pre_node);
                 pre_node->succ.erase(succ_node);
+                pre_node->pair.erase(succ_node);
             }
         }
     }
@@ -2154,7 +2104,7 @@ void CodeGen::phi_resort(BasicBlock* bb){
 void CodeGen::move_data(std::vector<std::set<Value*>> val_move){
     for(auto move_set : val_move){
         Value* val_from = *move_set.begin();
-        auto it = move_set.end(); it--;
+        auto it = move_set.begin(); it++;
         Value* val_to = *it;
         if(val_to==NULL){
             if(val_from->get_type()->is_integer_type()){

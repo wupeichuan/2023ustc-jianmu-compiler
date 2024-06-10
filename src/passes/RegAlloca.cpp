@@ -102,7 +102,8 @@ void RegAlloca::live_interval(Function *f){
             else if(ir->is_call()){
                 for(auto val : ir->get_operands()){
                     if(val->get_type()->is_function_type()){
-                        add_range(val,inst_id[ir],inst_id[ir]+1);
+                        add_range(val,-1,inst_id[ir]+1);
+                        add_range(val,inst_id[ir],-1);
                     }
                     else if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
                         add_range(val,-1,inst_id[ir]);
@@ -165,7 +166,19 @@ void RegAlloca::alloca_reg(Function* f){
     for(auto iter=unhandle_.begin();iter!=unhandle_.end();iter++){
         auto val=*iter;
         expire_old(val);
-        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+        if(val->get_type()->is_function_type()){
+            for(auto iiter=ractive_.begin();iiter!=ractive_.end();iiter++){
+                auto temp = *iiter;
+                handle_.erase(temp);
+            }
+            for(auto iiter=factive_.begin();iiter!=factive_.end();iiter++){
+                auto temp = *iiter;
+                handle_.erase(temp);
+            }
+            ractive_.clear();
+            factive_.clear();
+        }
+        else if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
             if(free_greg.size()==0){
                 spill(val);
             }
@@ -183,18 +196,6 @@ void RegAlloca::alloca_reg(Function* f){
                     ractive_.insert(ractive_.end(),val);
                 }
             }
-        }
-        else if(val->get_type()->is_function_type()){
-            for(auto iiter=ractive_.begin();iiter!=ractive_.end();iiter++){
-                auto temp = *iiter;
-                handle_.erase(temp);
-            }
-            for(auto iiter=factive_.begin();iiter!=factive_.end();iiter++){
-                auto temp = *iiter;
-                handle_.erase(temp);
-            }
-            ractive_.clear();
-            factive_.clear();
         }
         else{
             if(free_freg.size()==0){
