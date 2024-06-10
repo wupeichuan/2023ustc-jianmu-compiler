@@ -242,20 +242,20 @@ void CodeGen::gen_br() {
             auto *branchbb_false = static_cast<BasicBlock *>(branchInst->get_operand(2));
             if(!is_change(context.inst->get_parent(),branchbb_true,branchInst->get_operand(0))){
                 phi_resort(context.inst->get_parent());
-                move_data(true_val_move,context.inst->get_parent(),branchbb_true);
+                move_data(true_val_move);
                 append_inst("bnez",{Reg::t(m->get_handle(branchInst->get_operand(0))).print(),
                     label_name(branchbb_true)});
-                move_data(false_val_move,context.inst->get_parent(),branchbb_false);
+                move_data(false_val_move);
                 output.emplace_back("b " + label_name(branchbb_false));
             }
             else{
                 store_from_greg(branchInst->get_operand(0),Reg::t(m->get_handle(branchInst->get_operand(0))));
                 phi_resort(context.inst->get_parent());
-                move_data(true_val_move,context.inst->get_parent(),branchbb_true);
+                move_data(true_val_move);
                 load_to_greg(branchInst->get_operand(0),Reg::t(7));
                 append_inst("bnez",{Reg::t(7).print(),
                     label_name(branchbb_true)});
-                move_data(false_val_move,context.inst->get_parent(),branchbb_false);
+                move_data(false_val_move);
                 output.emplace_back("b " + label_name(branchbb_false));
             }       
         }
@@ -263,18 +263,18 @@ void CodeGen::gen_br() {
             auto *branchbb_true = static_cast<BasicBlock *>(branchInst->get_operand(1));
             auto *branchbb_false = static_cast<BasicBlock *>(branchInst->get_operand(2));
             phi_resort(context.inst->get_parent());
-            move_data(true_val_move,context.inst->get_parent(),branchbb_true);
+            move_data(true_val_move);
             load_to_greg(branchInst->get_operand(0), Reg::t(7));
             append_inst("bnez",{Reg::t(7).print(),
                 label_name(branchbb_true)});
-            move_data(false_val_move,context.inst->get_parent(),branchbb_true);
+            move_data(false_val_move);
             output.emplace_back("b " + label_name(branchbb_false));
             // throw not_implemented_error{__FUNCTION__};
         }
     } else {
         auto *branchbb = static_cast<BasicBlock *>(branchInst->get_operand(0));
         phi_resort(context.inst->get_parent());
-        move_data(true_val_move,context.inst->get_parent(),branchbb);
+        move_data(true_val_move);
         output.emplace_back("b " + label_name(branchbb));
     }
 }
@@ -1705,301 +1705,6 @@ void CodeGen::gen_fptosi() {
     }
     //throw not_implemented_error{__FUNCTION__};
 }
-bool CodeGen::is_change(BasicBlock* start,BasicBlock* end,Value* val){
-    bool is_change=false;
-    for(auto &inst : end->get_instructions()){
-        if((&inst)->is_phi()){
-            for(long unsigned int i=0;i<(&inst)->get_num_operand()/2;i++){
-                if((&inst)->get_operand(2*i+1)==start){
-                    if(m->get_handle(&inst)==m->get_handle(val)&&(&inst)->get_type()->is_integer_type())
-                        is_change=true;
-                }
-            }
-        }
-    }
-    return is_change;
-}
-std::shared_ptr<struct Node> CodeGen::find(Value* val){
-    std::vector<std::shared_ptr<struct Node>> stack;
-    std::set<std::shared_ptr<struct Node>> marked;
-    stack.push_back(graph_start);
-    marked.insert(graph_start);
-    while(!stack.empty()){
-        bool changed = false;
-        for(auto next_node : stack.back()->succ){
-            if(marked.count(next_node)==false){
-                auto next_val = *(next_node->val.begin());
-                bool next_is_int = next_val->get_type()->is_integer_type();
-                bool val_is_int = val->get_type()->is_integer_type();
-                bool is_same_type = (next_is_int&&val_is_int)||(!next_is_int&&!val_is_int);
-                if((val==next_val)||(is_same_type&&(m->get_handle(val)!=-1)&&(m->get_handle(val)==m->get_handle(next_val))))
-                    return next_node;
-                stack.push_back(next_node);
-                marked.insert(next_node);
-                changed=true;
-            }
-        }
-        if(changed==false){
-            stack.pop_back();
-        }
-    }
-    return nullptr;
-}
-void CodeGen::create_graph(BasicBlock* bb){
-    graph_start = std::make_shared<struct Node>();
-    for(auto &bb1 : bb->get_succ_basic_blocks()){
-        for(auto &inst : (bb1)->get_instructions()){
-            if((&inst)->is_phi()){
-                for(long unsigned int i=0;i<(&inst)->get_num_operand()/2;i++){
-                    if((&inst)->get_operand(2*i+1)==bb){
-                        std::shared_ptr<struct Node> node_from = find((&inst)->get_operand(2*i+1));
-                        std::shared_ptr<struct Node> node_to = find(&inst);
-                        if(node_from==nullptr&&node_to==nullptr){
-                            node_from = std::make_shared<struct Node>();
-                            node_from->val.insert((&inst)->get_operand(2*i+1));
-                            node_to = std::make_shared<struct Node>();
-                            node_to->val.insert(&inst);
-                            graph_start->succ.insert(node_from);
-                            node_from->succ.insert(node_to);
-                            node_to->pre.insert(node_from);
-                        }
-                        else if(node_from!=nullptr&&node_to==nullptr){
-                            node_from->val.insert((&inst)->get_operand(2*i+1));
-                            node_to = std::make_shared<struct Node>();
-                            node_to->val.insert(&inst);
-                            graph_start->succ.insert(node_from);
-                            node_from->succ.insert(node_to);
-                            node_to->pre.insert(node_from);
-                        }
-                        else if(node_from==nullptr&&node_to!=nullptr){
-                            node_from = std::make_shared<struct Node>();
-                            node_from->val.insert((&inst)->get_operand(2*i+1));
-                            node_to->val.insert(&inst);
-                            graph_start->succ.insert(node_from);
-                            node_from->succ.insert(node_to);
-                            node_to->pre.insert(node_from);
-                            if(graph_start->succ.count(node_to)>0){
-                                graph_start->succ.erase(node_to);
-                            }
-                        }
-                        else{
-                            node_from->val.insert((&inst)->get_operand(2*i+1));
-                            node_to->val.insert(&inst);
-                            if(node_from->succ.count(node_to)==0){
-                                node_from->succ.insert(node_to);
-                                node_to->pre.insert(node_from);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-void CodeGen::phi_resort(BasicBlock* bb){
-    create_graph(bb);
-    std::vector<std::shared_ptr<struct Node>> stack;
-    std::set<std::shared_ptr<struct Node>> marked;
-    for(auto node : graph_start->succ){
-        stack.push_back(node);
-    }
-    while(!stack.empty()){
-        if(stack.back()->succ.size()==0){
-            for(auto iter=stack.back()->val.begin(); iter!=stack.back()->val.end(); iter++){
-                auto iter_val = dynamic_cast<Instruction*>(*iter);
-                if(iter_val->get_parent()==bb){
-                    stack.back()->val.erase(iter);
-                    break;
-                }
-            }
-            if(stack.back()->pre.size()==0) { stack.pop_back(); continue; }
-            else if(stack.back()->pre.size()==1){
-                auto pre_node = *(stack.back()->pre.begin());
-                Value* pre_val;
-                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()==bb){
-                        pre_val = *iter;
-                        break;
-                    }
-                }
-                auto succ_val = dynamic_cast<Instruction*>(*(stack.back()->val.begin()));
-                if(succ_val->get_parent()==bb->get_succ_basic_blocks().front())
-                    true_val_move.push_back({pre_val,succ_val});
-                else
-                    false_val_move.push_back({pre_val,succ_val});
-                stack.back()->pre.clear();
-                pre_node->succ.erase(stack.back());
-            }
-            else{
-                auto* succ_val_1 = dynamic_cast<Instruction*>(*(stack.back()->val.begin()));
-                auto* succ_val_2 = dynamic_cast<Instruction*>(*(stack.back()->val.end()));
-                auto pre_node_1 = *(stack.back()->pre.begin());
-                auto pre_node_2 = *(stack.back()->pre.end());
-                Value* pre_val_1;
-                Value* pre_val_2;
-                for(auto iter=pre_node_1->val.begin(); iter!=pre_node_1->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()==bb){
-                        pre_val_1 = *iter;
-                        break;
-                    }
-                }
-                for(auto iter=pre_node_2->val.begin(); iter!=pre_node_2->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()==bb){
-                        pre_val_2 = *iter;
-                        break;
-                    }
-                }
-                bool is_true = false;
-                for(long unsigned int i=0;i<succ_val_1->get_num_operand()/2;i++){
-                    if(succ_val_1->get_operand(2*i)==pre_val_1&&succ_val_1->get_operand(2*i+1)==bb){
-                        is_true = true;
-                        break;
-                    }
-                }
-                auto bb1 = bb->get_succ_basic_blocks();
-                if(bb1.front()==succ_val_1->get_parent()){
-                    if(is_true){ true_val_move.push_back({pre_val_1,succ_val_1}); false_val_move.push_back({pre_val_2,succ_val_2});}
-                    else { true_val_move.push_back({pre_val_2,succ_val_1}); false_val_move.push_back({pre_val_1,succ_val_2}); }
-                }
-                else{
-                    if(is_true){ true_val_move.push_back({pre_val_2,succ_val_2}); false_val_move.push_back({pre_val_1,succ_val_1});}
-                    else { true_val_move.push_back({pre_val_1,succ_val_2}); false_val_move.push_back({pre_val_2,succ_val_1}); }
-                }
-                stack.back()->pre.clear();
-                pre_node_1->succ.erase(stack.back());
-                pre_node_2->succ.erase(stack.back());
-            }
-        }
-        else{
-            if(marked.count(*(stack.back()->succ.begin()))==0){
-                stack.push_back(*(stack.back()->succ.begin()));
-                marked.insert(stack.back());
-            }
-            else{
-                auto pre_node = stack.back();
-                auto succ_node = *(stack.back()->succ.begin());
-                Value* pre_val; 
-                Value* succ_val;
-                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()==bb){
-                        pre_val = *iter;
-                        break;
-                    }
-                }
-                bool is_true=false;
-                auto bb1 = bb->get_succ_basic_blocks();
-                for(auto iter=succ_node->val.begin(); iter!=succ_node->val.end(); iter++){
-                    auto iter_val = dynamic_cast<Instruction*>(*iter);
-                    if(iter_val->get_parent()!=bb){
-                        for(long unsigned int i=0; i<iter_val->get_num_operand()/2; i++){
-                            if(iter_val->get_operand(2*i)==pre_val&&iter_val->get_operand(2*i+1)==bb){
-                                if(iter_val->get_parent()==*bb1.begin()) is_true=true;
-                                succ_val=*iter;
-                                break;
-                            }
-                        }
-                    }
-                }
-                loop_save.insert(succ_val);
-                if(is_true){
-                    true_val_move.push_back({succ_val,NULL});
-                    true_val_move.push_back({pre_val,succ_val});
-                }
-                else{
-                    false_val_move.push_back({succ_val,NULL});
-                    false_val_move.push_back({pre_val,succ_val});
-                }
-                succ_node->pre.clear();
-                pre_node->succ.erase(succ_node);
-            }
-        }
-    }
-}
-void CodeGen::move_data(std::vector<std::set<Value*>> val_move,BasicBlock* bb,BasicBlock* bb_end){
-    for(auto &inst : bb_end->get_instructions()){
-        if((&inst)->is_phi()){
-            for(long unsigned int i=0;i<(&inst)->get_num_operand()/2;i++){
-                if((&inst)->get_operand(2*i+1)==bb){
-                    append_inst(inst.print(), ASMInstruction::Comment);
-                }
-            }
-        }
-    }
-    for(auto move_set : val_move){
-        Value* val_from = *move_set.begin();
-        Value* val_to = *move_set.end();
-        if(val_to==NULL){
-            if(val_from->get_type()->is_integer_type()){
-                store_from_greg(val_from,Reg::t(m->get_handle(val_from)));
-            }
-            else{
-                store_from_freg(val_from,FReg::ft(m->get_handle(val_from)));
-            }
-        }
-        else{
-            if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)!=-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    if(loop_save.count(val_from)>0) load_to_greg(val_from,Reg::t(m->get_handle(val_from)));
-                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
-                        Reg::t(m->get_handle(val_from)).print(),"$zero"});
-                }
-                else{
-                    if(loop_save.count(val_from)>0) load_to_freg(val_from,FReg::ft(m->get_handle(val_from)));
-                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
-                        FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
-                }
-            }
-            else if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)==-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    if(loop_save.count(val_from)>0) load_to_greg(val_from,Reg::t(m->get_handle(val_from)));
-                    append_inst("add.d",{Reg::t(7).print(),
-                        Reg::t(m->get_handle(val_from)).print(),"$zero"});
-                    store_from_greg(val_to,Reg::t(7));
-                }
-                else{
-                    if(loop_save.count(val_from)>0) load_to_freg(val_from,FReg::ft(m->get_handle(val_from)));
-                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("fadd.s",{FReg::ft(15).print(),
-                        FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
-                    store_from_freg(val_to,FReg::ft(15));
-                }
-            }
-            else if(m->get_handle(val_from)==-1&&m->get_handle(val_to)!=-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    load_to_greg(val_from,Reg::t(7));
-                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
-                        Reg::t(7).print(),"$zero"});
-                }
-                else{
-                    load_to_freg(val_from,FReg::ft(15));
-                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
-                        FReg::ft(15).print(),FReg::ft(14).print()});
-                }
-            }
-            else{
-                if((val_to)->get_type()->is_integer_type()){
-                    load_to_greg(val_from,Reg::t(7));
-                    append_inst("add.d",{Reg::t(7).print(),
-                        Reg::t(7).print(),"$zero"});
-                    store_from_greg(val_to,Reg::t(7));
-                }
-                else{
-                    load_to_freg(val_from,FReg::ft(15));
-                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("fadd.s",{FReg::ft(15).print(),
-                        FReg::ft(15).print(),FReg::ft(14).print()});
-                    store_from_freg(val_to,FReg::ft(15));
-                }
-            }
-        }
-    }
-}
 void CodeGen::run() {
     // 确保每个函数中基本块的名字都被设置好
     // 想一想：为什么？
@@ -2136,4 +1841,416 @@ std::string CodeGen::print() const {
         result += inst.format();
     }
     return result;
+}
+
+bool CodeGen::is_change(BasicBlock* start,BasicBlock* end,Value* val){
+    bool is_change=false;
+    for(auto &inst : end->get_instructions()){
+        if((&inst)->is_phi()){
+            for(long unsigned int i=0;i<(&inst)->get_num_operand()/2;i++){
+                if((&inst)->get_operand(2*i+1)==start){
+                    if(m->get_handle(&inst)==m->get_handle(val)&&(&inst)->get_type()->is_integer_type())
+                        is_change=true;
+                }
+            }
+        }
+    }
+    return is_change;
+}
+std::shared_ptr<struct Node> CodeGen::find(Value* val){
+    std::vector<std::shared_ptr<struct Node>> stack;
+    std::set<std::shared_ptr<struct Node>> marked;
+    stack.push_back(graph_start);
+    marked.insert(graph_start);
+    while(!stack.empty()){
+        bool changed = false;
+        for(auto next_node : stack.back()->succ){
+            if(marked.count(next_node)==0){
+                auto next_val = *(next_node->val.begin());
+                bool next_is_int = next_val->get_type()->is_integer_type();
+                bool val_is_int = val->get_type()->is_integer_type();
+                bool is_same_type = (next_is_int&&val_is_int)||(!next_is_int&&!val_is_int);
+                if((val==next_val)||(is_same_type&&(m->get_handle(val)!=-1)&&(m->get_handle(val)==m->get_handle(next_val))))
+                    return next_node;
+                stack.push_back(next_node);
+                marked.insert(next_node);
+                changed=true;
+            }
+        }
+        if(changed==false){
+            stack.pop_back();
+        }
+    }
+    return nullptr;
+}
+void CodeGen::create_graph(BasicBlock* bb){
+    graph_start = std::make_shared<struct Node>();
+    for(auto &bb1 : bb->get_succ_basic_blocks()){
+        for(auto &inst : (bb1)->get_instructions()){
+            if((&inst)->is_phi()){
+                for(long unsigned int i=0;i<(&inst)->get_num_operand()/2;i++){
+                    if((&inst)->get_operand(2*i+1)==bb){
+                        std::shared_ptr<struct Node> node_from = find((&inst)->get_operand(2*i));
+                        std::shared_ptr<struct Node> node_to = find(&inst);
+                        if(node_from==nullptr&&node_to==nullptr){
+                            node_from = std::make_shared<struct Node>();
+                            node_from->val.insert((&inst)->get_operand(2*i));
+                            graph_start->succ.insert(node_from);
+                            if(find(&inst)!=node_from){
+                                node_to = std::make_shared<struct Node>();
+                                node_to->val.insert(&inst);
+                                node_from->succ.insert(node_to);
+                                node_to->pre.insert(node_from);
+                                node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            }
+                            else{
+                                node_from->succ.insert(node_from);
+                                node_from->pre.insert(node_from);
+                                node_from->pair[node_from].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            }
+                        }
+                        else if(node_from!=nullptr&&node_to==nullptr){
+                            node_from->val.insert((&inst)->get_operand(2*i));
+                            node_to = std::make_shared<struct Node>();
+                            node_to->val.insert(&inst);
+                            node_from->succ.insert(node_to);
+                            node_to->pre.insert(node_from);
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                        }
+                        else if(node_from==nullptr&&node_to!=nullptr){
+                            node_from = std::make_shared<struct Node>();
+                            node_from->val.insert((&inst)->get_operand(2*i));
+                            node_to->val.insert(&inst);
+                            graph_start->succ.insert(node_from);
+                            node_from->succ.insert(node_to);
+                            node_to->pre.insert(node_from);
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            if(graph_start->succ.count(node_to)>0){
+                                graph_start->succ.erase(node_to);
+                            }
+                        }
+                        else{
+                            node_from->val.insert((&inst)->get_operand(2*i));
+                            node_to->val.insert(&inst);
+                            node_from->pair[node_to].push_back({(&inst)->get_operand(2*i+1),&inst});
+                            if(node_from->succ.count(node_to)==0){
+                                node_from->succ.insert(node_to);
+                                node_to->pre.insert(node_from);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+void CodeGen::phi_resort(BasicBlock* bb){
+    true_val_move.clear();
+    false_val_move.clear();
+    loop_save.clear();
+    create_graph(bb);
+    std::vector<std::shared_ptr<struct Node>> stack;
+    std::set<std::shared_ptr<struct Node>> marked;
+    BasicBlock* bb_true;
+    if(context.inst->get_num_operand()==1) bb_true = dynamic_cast<BasicBlock*>(context.inst->get_operand(0));
+    else bb_true = dynamic_cast<BasicBlock*>(context.inst->get_operand(1));
+    for(auto node : graph_start->succ){
+        marked.insert(node);
+        stack.push_back(node);
+    }
+    while(!stack.empty()){
+        if(stack.back()->succ.size()==0){
+            if(stack.back()->pre.size()==0){ 
+                stack.pop_back(); 
+                continue; 
+            }
+            else if(stack.back()->pre.size()==1){
+                auto pre_node = *(stack.back()->pre.begin());
+                Value* pre_val;
+                Value* succ_val;
+                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
+                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
+                        pre_val = *iter;
+                        break;
+                    }
+                    else{
+                        auto iter_val = dynamic_cast<Instruction*>(*iter);
+                        if(iter_val->get_parent()==bb){
+                            pre_val = *iter;
+                            break;
+                        }
+                    }
+                }
+                for(auto iter=stack.back()->val.begin(); iter!=stack.back()->val.end(); iter++){
+                    auto iter_val = dynamic_cast<Instruction*>(*iter);
+                    if(iter_val->get_parent()!=bb){
+                        succ_val=*iter;
+                        if(iter_val->get_parent()==bb_true) break;
+                    }
+                }
+                auto iter_val = dynamic_cast<Instruction*>(succ_val);
+                if(iter_val->get_parent()==bb_true)
+                    true_val_move.push_back({pre_val,succ_val});
+                else
+                    false_val_move.push_back({pre_val,succ_val});
+                stack.back()->pre.clear();
+                pre_node->succ.erase(stack.back());
+            }
+            else{
+                auto* succ_val_1 = dynamic_cast<Instruction*>(*(stack.back()->val.begin()));
+                auto* succ_val_2 = dynamic_cast<Instruction*>(*(stack.back()->val.end()));
+                auto pre_node_1 = *(stack.back()->pre.begin());
+                auto pre_node_2 = *(stack.back()->pre.end());
+                std::set<Value*> pre_val_1_set;
+                std::set<Value*> pre_val_2_set;
+                Value* pre_val_1;
+                Value* pre_val_2;
+                for(auto iter=pre_node_1->val.begin(); iter!=pre_node_1->val.end(); iter++){
+                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
+                        pre_val_1_set.insert(*iter);
+                        break;
+                    }
+                    else{
+                        auto iter_val = dynamic_cast<Instruction*>(*iter);
+                        if(iter_val->get_parent()==bb){
+                            pre_val_1_set.insert(*iter);
+                            break;
+                        }
+                    }
+                }
+                for(auto iter=pre_node_2->val.begin(); iter!=pre_node_2->val.end(); iter++){
+                    if(dynamic_cast<ConstantInt*>(*iter)||dynamic_cast<ConstantFP*>(*iter)){
+                        pre_val_2_set.insert(*iter);
+                        break;
+                    }
+                    else{
+                        auto iter_val = dynamic_cast<Instruction*>(*iter);
+                        if(iter_val->get_parent()==bb){
+                            pre_val_2_set.insert(*iter);
+                            break;
+                        }
+                    }
+                }
+                bool is_true = false;
+                for(long unsigned int i=0;i<succ_val_1->get_num_operand()/2;i++){
+                    if(pre_val_1_set.count(succ_val_1->get_operand(2*i))>0&&succ_val_1->get_operand(2*i+1)==bb){
+                        pre_val_1 = succ_val_1->get_operand(2*i);
+                        is_true = true;
+                        break;
+                    }
+                }
+                if(is_true){
+                    for(long unsigned int i=0;i<succ_val_2->get_num_operand()/2;i++){
+                    if(pre_val_2_set.count(succ_val_2->get_operand(2*i))>0&&succ_val_2->get_operand(2*i+1)==bb){
+                        pre_val_2 = succ_val_2->get_operand(2*i);
+                        break;
+                    }
+                    }
+                }
+                else{
+                    for(long unsigned int i=0;i<succ_val_1->get_num_operand()/2;i++){
+                    if(pre_val_2_set.count(succ_val_1->get_operand(2*i))>0&&succ_val_1->get_operand(2*i+1)==bb){
+                        pre_val_2 = succ_val_1->get_operand(2*i);
+                        break;
+                    }
+                    }
+                    for(long unsigned int i=0;i<succ_val_2->get_num_operand()/2;i++){
+                    if(pre_val_1_set.count(succ_val_2->get_operand(2*i))>0&&succ_val_2->get_operand(2*i+1)==bb){
+                        pre_val_1 = succ_val_2->get_operand(2*i);
+                        break;
+                    }
+                    }
+                }
+                if(bb_true==succ_val_1->get_parent()){
+                    if(is_true){ true_val_move.push_back({pre_val_1,succ_val_1}); false_val_move.push_back({pre_val_2,succ_val_2});}
+                    else { true_val_move.push_back({pre_val_2,succ_val_1}); false_val_move.push_back({pre_val_1,succ_val_2}); }
+                }
+                else{
+                    if(is_true){ true_val_move.push_back({pre_val_2,succ_val_2}); false_val_move.push_back({pre_val_1,succ_val_1});}
+                    else { true_val_move.push_back({pre_val_1,succ_val_2}); false_val_move.push_back({pre_val_2,succ_val_1}); }
+                }
+                stack.back()->pre.clear();
+                pre_node_1->succ.erase(stack.back());
+                pre_node_2->succ.erase(stack.back());
+            }
+        }
+        else{
+            if(marked.count(*(stack.back()->succ.begin()))==0){
+                stack.push_back(*(stack.back()->succ.begin()));
+                marked.insert(stack.back());
+            }
+            else if(*(stack.back()->succ.begin())==stack.back()){
+                if(stack.back()->succ.size()>1){
+                    stack.back()->succ.erase(stack.back()->succ.begin());
+                    stack.back()->succ.insert(stack.back()->succ.end(),stack.back());
+                    continue;
+                }
+                else{
+                    auto node = stack.back();
+                    Value* pre_val;
+                    Value* succ_val;
+                    for(auto iter=node->val.begin(); iter!=node->val.end(); iter++){
+                        auto iter_val = dynamic_cast<Instruction*>(*iter);
+                        if(iter_val->get_parent()==bb){
+                            pre_val = *iter;
+                            break;
+                        }
+                    }
+                    for(auto iter=node->val.begin(); iter!=node->val.end(); iter++){
+                        auto iter_val = dynamic_cast<Instruction*>(*iter);
+                        for(long unsigned int i=0; i<iter_val->get_num_operand()/2;i++){
+                            if(iter_val->get_operand(2*i)==pre_val){
+                                succ_val=*iter;
+                                break;
+                            }
+                        }
+                    }
+                    auto iter_val = dynamic_cast<Instruction*>(succ_val);
+                    if(iter_val->get_parent()==bb_true){
+                        true_val_move.push_back({pre_val,succ_val});
+                    }
+                    else{
+                        false_val_move.push_back({pre_val,succ_val});
+                    }
+                    node->pre.erase(node);
+                    node->succ.erase(node);
+                }
+            }
+            else{
+                auto pre_node = stack.back();
+                auto succ_node = *(stack.back()->succ.begin());
+                Value* pre_val; 
+                Value* succ_val;
+                for(auto iter=pre_node->val.begin(); iter!=pre_node->val.end(); iter++){
+                    auto iter_val = dynamic_cast<Instruction*>(*iter);
+                    if(iter_val->get_parent()==bb){
+                        pre_val = *iter;
+                        break;
+                    }
+                }
+                for(auto iter=succ_node->val.begin(); iter!=succ_node->val.end(); iter++){
+                    auto iter_val = dynamic_cast<Instruction*>(*iter);
+                    if(iter_val->get_parent()!=bb){
+                        succ_val=*iter;
+                        if(iter_val->get_parent()==bb_true) break;
+                    }
+                }
+                loop_save.insert(succ_val);
+                auto iter_val = dynamic_cast<Instruction*>(succ_val);
+                if(iter_val->get_parent()==bb_true){
+                    true_val_move.push_back({succ_val,NULL});
+                    true_val_move.push_back({pre_val,succ_val});
+                }
+                else{
+                    false_val_move.push_back({succ_val,NULL});
+                    false_val_move.push_back({pre_val,succ_val});
+                }
+                succ_node->pre.erase(pre_node);
+                pre_node->succ.erase(succ_node);
+            }
+        }
+    }
+}
+void CodeGen::move_data(std::vector<std::set<Value*>> val_move){
+    for(auto move_set : val_move){
+        Value* val_from = *move_set.begin();
+        auto it = move_set.end(); it--;
+        Value* val_to = *it;
+        if(val_to==NULL){
+            if(val_from->get_type()->is_integer_type()){
+                store_from_greg(val_from,Reg::t(m->get_handle(val_from)));
+            }
+            else{
+                store_from_freg(val_from,FReg::ft(m->get_handle(val_from)));
+            }
+        }
+        else{
+            auto inst = dynamic_cast<Instruction*>(val_to);
+            append_inst(inst->print(), ASMInstruction::Comment);
+            if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)!=-1){
+                if((val_to)->get_type()->is_integer_type()){
+                    if(loop_save.count(val_from)>0){
+                        load_to_greg(val_from,Reg::t(7));
+                        append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                            Reg::t(7).print(),"$zero"});
+                    }
+                    else{
+                        append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                            Reg::t(m->get_handle(val_from)).print(),"$zero"});
+                    }
+                }
+                else{
+                    if(loop_save.count(val_from)>0){
+                        load_to_freg(val_from,FReg::ft(15));
+                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                        append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
+                            FReg::ft(15).print(),FReg::ft(14).print()});
+                    }
+                    else{
+                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                        append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
+                            FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
+                    }
+                }
+            }
+            else if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)==-1){
+                if((val_to)->get_type()->is_integer_type()){
+                    if(loop_save.count(val_from)>0){
+                        load_to_greg(val_from,Reg::t(7));
+                        append_inst("add.d",{Reg::t(7).print(),
+                            Reg::t(7).print(),"$zero"});
+                        store_from_greg(val_to,Reg::t(7));
+                    }
+                    else{
+                        append_inst("add.d",{Reg::t(7).print(),
+                            Reg::t(m->get_handle(val_from)).print(),"$zero"});
+                        store_from_greg(val_to,Reg::t(7));
+                    }
+                }
+                else{
+                    if(loop_save.count(val_from)>0){
+                        load_to_freg(val_from,FReg::ft(15));
+                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                        append_inst("fadd.s",{FReg::ft(15).print(),
+                            FReg::ft(15).print(),FReg::ft(14).print()});
+                        store_from_freg(val_to,FReg::ft(15));
+                    }
+                    else{
+                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                        append_inst("fadd.s",{FReg::ft(15).print(),
+                            FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
+                        store_from_freg(val_to,FReg::ft(15));
+                    }
+                }
+            }
+            else if(m->get_handle(val_from)==-1&&m->get_handle(val_to)!=-1){
+                if((val_to)->get_type()->is_integer_type()){
+                    load_to_greg(val_from,Reg::t(7));
+                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                        Reg::t(7).print(),"$zero"});
+                }
+                else{
+                    load_to_freg(val_from,FReg::ft(15));
+                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                    append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
+                        FReg::ft(15).print(),FReg::ft(14).print()});
+                }
+            }
+            else{
+                if((val_to)->get_type()->is_integer_type()){
+                    load_to_greg(val_from,Reg::t(7));
+                    append_inst("add.d",{Reg::t(7).print(),
+                        Reg::t(7).print(),"$zero"});
+                    store_from_greg(val_to,Reg::t(7));
+                }
+                else{
+                    load_to_freg(val_from,FReg::ft(15));
+                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                    append_inst("fadd.s",{FReg::ft(15).print(),
+                        FReg::ft(15).print(),FReg::ft(14).print()});
+                    store_from_freg(val_to,FReg::ft(15));
+                }
+            }
+        }
+    }
 }

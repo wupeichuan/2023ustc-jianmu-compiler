@@ -9,6 +9,7 @@ struct Node{
     std::set<Value*> val;
     std::set<std::shared_ptr<struct Node>> succ;
     std::set<std::shared_ptr<struct Node>> pre;
+    std::map<std::shared_ptr<struct Node>,std::vector<std::set<Value*>>> pair;
 };
 
 class CodeGen {
@@ -72,7 +73,7 @@ class CodeGen {
     void phi_resort(BasicBlock* bb);
     void create_graph(BasicBlock* bb);
     std::shared_ptr<struct Node> find(Value* val);
-    void move_data(std::vector<std::set<Value*>> val_move,BasicBlock* bb,BasicBlock* bb_end);
+    void move_data(std::vector<std::set<Value*>> val_move);
 
     static std::string label_name(BasicBlock *bb) {
         return "." + bb->get_parent()->get_name() + "_" + bb->get_name();
