@@ -10,45 +10,35 @@ min:
 	add.d $t1, $a1, $zero
 .min_label_entry:
 # %op2 = alloca i32
-	addi.d $t8, $fp, -36
-	addi.d $t7, $fp, -32
-	st.d $t8, $t7, 0
+	addi.d $t2, $fp, -36
 # store i32 %arg0, i32* %op2
-	ld.d $t7, $fp, -32
-	st.w $t0, $t7, 0
+	st.w $t0, $t2, 0
 # %op3 = alloca i32
-	addi.d $t8, $fp, -52
-	addi.d $t7, $fp, -48
-	st.d $t8, $t7, 0
+	addi.d $t0, $fp, -52
 # store i32 %arg1, i32* %op3
-	ld.d $t7, $fp, -48
-	st.w $t1, $t7, 0
+	st.w $t1, $t0, 0
 # %op4 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
+	ld.w $t1, $t2, 0
 # %op5 = load i32, i32* %op3
-	ld.d $t8, $fp, -48
-	ld.w $t0, $t8, 0
+	ld.w $t3, $t0, 0
 # %op6 = icmp sle i32 %op4, %op5
-	slt $t7, $t1, $t0
-	xor $t8, $t1, $t0
+	slt $t7, $t1, $t3
+	xor $t8, $t1, $t3
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	or $t0, $t7, $t8
+	or $t1, $t7, $t8
 # br i1 %op6, label %label7, label %label9
-	bnez $t0, .min_label7
+	bnez $t1, .min_label7
 	b .min_label9
 .min_label7:
 # %op8 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t0, $t8, 0
+	ld.w $t1, $t2, 0
 # ret i32 %op8
-	add.w $a0, $t0, $zero
+	add.w $a0, $t1, $zero
 	b min_exit
 .min_label9:
 # %op10 = load i32, i32* %op3
-	ld.d $t8, $fp, -48
-	ld.w $t0, $t8, 0
+	ld.w $t0, $t0, 0
 # ret i32 %op10
 	add.w $a0, $t0, $zero
 	b min_exit

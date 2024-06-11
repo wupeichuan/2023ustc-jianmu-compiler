@@ -12,12 +12,9 @@ mod:
 	fadd.s $ft1, $fa1, $ft14
 .mod_label_entry:
 # %op2 = alloca float
-	addi.d $t8, $fp, -36
-	addi.d $t7, $fp, -32
-	st.d $t8, $t7, 0
+	addi.d $t0, $fp, -36
 # store float %arg0, float* %op2
-	ld.d $t7, $fp, -32
-	fst.s $ft0, $t7, 0
+	fst.s $ft0, $t0, 0
 # %op3 = alloca float
 	addi.d $t1, $fp, -52
 # store float %arg1, float* %op3
@@ -25,23 +22,21 @@ mod:
 # %op4 = load float, float* %op3
 	fld.s $ft0, $t1, 0
 # %op5 = load float, float* %op2
-	ld.d $t8, $fp, -32
-	fld.s $ft1, $t8, 0
+	fld.s $ft1, $t0, 0
 # %op6 = fdiv float %op5, %op4
 	fdiv.s $ft0, $ft1, $ft0
 # %op7 = fptosi float %op6 to i32
 	ftintrz.w.s $ft14, $ft0
-	movfr2gr.s $t0, $ft14
+	movfr2gr.s $t2, $ft14
 # %op8 = load float, float* %op3
 	fld.s $ft0, $t1, 0
 # %op9 = sitofp i32 %op7 to float
-	movgr2fr.w $ft14, $t0
+	movgr2fr.w $ft14, $t2
 	ffint.s.w $ft1, $ft14
 # %op10 = fmul float %op9, %op8
 	fmul.s $ft0, $ft1, $ft0
 # %op11 = load float, float* %op2
-	ld.d $t8, $fp, -32
-	fld.s $ft1, $t8, 0
+	fld.s $ft1, $t0, 0
 # %op12 = fsub float %op11, %op10
 	fsub.s $ft0, $ft1, $ft0
 # ret float %op12

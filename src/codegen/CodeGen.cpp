@@ -1424,7 +1424,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1432,7 +1432,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }
@@ -1444,7 +1444,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1452,7 +1452,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }
@@ -1464,7 +1464,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1472,7 +1472,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }
@@ -1484,7 +1484,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1492,7 +1492,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }
@@ -1504,7 +1504,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1512,7 +1512,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }
@@ -1524,7 +1524,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(m->get_handle(context.inst)).print(),"$zero","0"});
             append_inst("b 4");
         }
         else{
@@ -1532,7 +1532,7 @@ void CodeGen::gen_fcmp() {
             append_inst("b 12");
             append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
             append_inst("b 12");
-            append_inst("addi.w",{Reg::t(7).print(),"$zero","1"});
+            append_inst("addi.w",{Reg::t(7).print(),"$zero","0"});
             append_inst("b 4");
             store_from_greg(context.inst, Reg::t(7));
         }

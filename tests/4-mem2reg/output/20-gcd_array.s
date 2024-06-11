@@ -23,12 +23,9 @@ gcd:
 	add.d $t1, $a1, $zero
 .gcd_label_entry:
 # %op2 = alloca i32
-	addi.d $t8, $fp, -36
-	addi.d $t7, $fp, -32
-	st.d $t8, $t7, 0
+	addi.d $t2, $fp, -36
 # store i32 %arg0, i32* %op2
-	ld.d $t7, $fp, -32
-	st.w $t0, $t7, 0
+	st.w $t0, $t2, 0
 # %op3 = alloca i32
 	addi.d $t0, $fp, -52
 # store i32 %arg1, i32* %op3
@@ -45,35 +42,29 @@ gcd:
 	b .gcd_label8
 .gcd_label6:
 # %op7 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
+	ld.w $t1, $t2, 0
 # ret i32 %op7
 	add.w $a0, $t1, $zero
 	b gcd_exit
 .gcd_label8:
 # %op9 = load i32, i32* %op3
-	ld.w $t7, $t0, 0
-	st.w $t7, $fp, -68
+	ld.w $t1, $t0, 0
 # %op10 = load i32, i32* %op3
-	ld.w $t7, $t0, 0
-	st.w $t7, $fp, -72
+	ld.w $t3, $t0, 0
 # %op11 = load i32, i32* %op3
 	ld.w $t0, $t0, 0
 # %op12 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
+	ld.w $t4, $t2, 0
 # %op13 = sdiv i32 %op12, %op11
-	div.w $t0, $t1, $t0
+	div.w $t0, $t4, $t0
 # %op14 = mul i32 %op13, %op10
-	ld.w $t8, $fp, -72
-	mul.w $t0, $t0, $t8
+	mul.w $t0, $t0, $t3
 # %op15 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
+	ld.w $t2, $t2, 0
 # %op16 = sub i32 %op15, %op14
-	sub.w $t0, $t1, $t0
+	sub.w $t0, $t2, $t0
 # %op17 = call i32 @gcd(i32 %op9, i32 %op16)
-	ld.w $a0, $fp, -68
+	add.d $a0, $t1, $zero
 	add.d $a1, $t0, $zero
 	bl gcd
 	add.w $t0, $a0, $zero

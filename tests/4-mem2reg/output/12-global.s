@@ -121,56 +121,47 @@ returnToZeroSteps:
 	add.w $t0, $t7, $t8
 # br label %label11
 # %op12 = phi i32 [ %op8, %label7 ], [ %op10, %label9 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -48
+	add.d $t2, $t0, $zero
 	b .returnToZeroSteps_label11
 .returnToZeroSteps_label9:
 # %op10 = sub i32 %op3, 1
 	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 1
-	sub.w $t7, $t7, $t8
-	st.w $t7, $fp, -44
+	sub.w $t1, $t7, $t8
 # br label %label11
 # %op12 = phi i32 [ %op8, %label7 ], [ %op10, %label9 ]
-	ld.w $t7, $fp, -44
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -48
+	add.d $t2, $t1, $zero
 	b .returnToZeroSteps_label11
 .returnToZeroSteps_label11:
 # %op12 = phi i32 [ %op8, %label7 ], [ %op10, %label9 ]
 # %op13 = add i32 %op2, 1
 	ld.w $t7, $fp, -24
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -52
+	add.w $t3, $t7, $t8
 # %op14 = icmp eq i32 %op12, 0
-	ld.w $t7, $fp, -48
 	addi.w $t8, $zero, 0
-	xor $t7, $t7, $t8
+	xor $t7, $t2, $t8
 	sltu $t7, $zero, $t7
-	xori $t1, $t7, 1
+	xori $t4, $t7, 1
 # br i1 %op14, label %label15, label %label16
-	bnez $t1, .returnToZeroSteps_label15
+	bnez $t4, .returnToZeroSteps_label15
 	b .returnToZeroSteps_label16
 .returnToZeroSteps_label15:
 # ret i32 %op13
-	ld.w $a0, $fp, -52
+	add.w $a0, $t3, $zero
 	b returnToZeroSteps_exit
 .returnToZeroSteps_label16:
 # %op17 = icmp slt i32 %op13, 20
-	ld.w $t7, $fp, -52
 	addi.w $t8, $zero, 20
-	slt $t1, $t7, $t8
+	slt $t4, $t3, $t8
 # br i1 %op17, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op13, %label16 ]
-	ld.w $t7, $fp, -52
-	add.d $t7, $t7, $zero
+	add.d $t7, $t3, $zero
 	st.w $t7, $fp, -24
 # %op3 = phi i32 [ 0, %label_entry ], [ %op12, %label16 ]
-	ld.w $t7, $fp, -48
-	add.d $t7, $t7, $zero
+	add.d $t7, $t2, $zero
 	st.w $t7, $fp, -28
-	bnez $t1, .returnToZeroSteps_label1
+	bnez $t4, .returnToZeroSteps_label1
 	b .returnToZeroSteps_label6
 returnToZeroSteps_exit:
 	addi.d $sp, $sp, 64
