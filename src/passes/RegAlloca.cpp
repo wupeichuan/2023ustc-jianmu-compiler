@@ -69,32 +69,39 @@ void RegAlloca::live_interval(Function *f){
                 ||ir->is_cmp()||ir->is_fcmp()
                 ||ir->is_fp2si()||ir->is_si2fp()||ir->is_zext()){
                 for(auto val : ir->get_operands()){
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<ConstantFP *>(val)){
                         add_range(val,-1,inst_id[ir]);
                     }
                 }
-                add_range(ir,inst_id[ir]+1,-1);
+                if(!dynamic_cast<GlobalVariable *>(ir))
+                    add_range(ir,inst_id[ir]+1,-1);
             }
             else if(ir->is_store()){
                 auto val_1 = ir->get_operand(0);
                 auto val_2 = ir->get_operand(1);
-                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)){
+                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)
+                    &&!dynamic_cast<GlobalVariable *>(val_1)){
                     add_range(val_1,-1,inst_id[ir]);
                 }
-                add_range(val_2,inst_id[ir]+1,-1);
+                if(!dynamic_cast<GlobalVariable *>(val_2))
+                    add_range(val_2,-1,inst_id[ir]); //not "add_range(val_2,inst_id[ir]+1,-1)"
             }
             else if(ir->is_load()){
                 auto val_1 = ir->get_operand(0);
-                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)){
+                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)
+                    &&!dynamic_cast<GlobalVariable *>(val_1)){
                     add_range(val_1,-1,inst_id[ir]);
                 }
-                add_range(ir,inst_id[ir]+1,-1);
+                if(!dynamic_cast<GlobalVariable *>(ir))
+                    add_range(ir,inst_id[ir]+1,-1);
             }
             else if(ir->is_br()){
                 auto _ir = dynamic_cast<BranchInst *>(ir);
                 if(_ir->is_cond_br()){
                     auto val = _ir->get_operand(0);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);
                     }
                 }
@@ -105,18 +112,20 @@ void RegAlloca::live_interval(Function *f){
                         add_range(val,-1,inst_id[ir]+1);
                         add_range(val,inst_id[ir],-1);
                     }
-                    else if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    else if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);
                     }
                 }
-                if(!ir->is_void()){
+                if(!ir->is_void()&&!dynamic_cast<GlobalVariable *>(ir)){
                     add_range(ir,inst_id[ir]+1,-1);
                 }
             }
             else if(ir->is_ret()){
                 if(!ir->is_void()){
                     auto val = ir->get_operand(0);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);
                     }
                 }
@@ -124,21 +133,25 @@ void RegAlloca::live_interval(Function *f){
             else if(ir->is_phi()){
                 for(long unsigned int i=0; i<ir->get_num_operand()/2; i++){
                     auto val = ir->get_operand(2*i);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);     
                     }
                 }
-                add_range(ir,inst_id[&(bb->get_instructions().front())],-1);
+                if(!dynamic_cast<GlobalVariable *>(ir))
+                    add_range(ir,inst_id[&(bb->get_instructions().front())],-1);
             }
             else if(ir->is_gep()){
                 for(auto val : ir->get_operands()){
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);
                     }
                 }
-                add_range(ir,inst_id[ir]+1,-1);
+                if(!dynamic_cast<GlobalVariable *>(ir))
+                    add_range(ir,inst_id[ir]+1,-1);
             }
-            else if(ir->is_alloca()){
+            else if(ir->is_alloca()&&!dynamic_cast<GlobalVariable *>(ir)){
                 add_range(ir,inst_id[ir]+1,-1);
             }
         }
@@ -244,7 +257,7 @@ void RegAlloca::expire_old(Value* val){
         while(iiter!=ractive_.end()){
             auto vval=*iiter;
             if(get_end(vval)>get_start(val)){
-                return;
+                break;
             }
             ractive_.erase(iiter);
             free_greg.insert(handle_[vval]);
@@ -257,7 +270,7 @@ void RegAlloca::expire_old(Value* val){
                 return;
             }
             factive_.erase(iiter2);
-            free_greg.insert(handle_[vval]);
+            free_freg.insert(handle_[vval]);
             iiter2=factive_.begin();
         }
     }
@@ -281,7 +294,7 @@ void RegAlloca::expire_old(Value* val){
                 return;
             }
             factive_.erase(iiter2);
-            free_greg.insert(handle_[vval]);
+            free_freg.insert(handle_[vval]);
             iiter2=factive_.begin();
         }
     }

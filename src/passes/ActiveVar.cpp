@@ -24,38 +24,42 @@ void ActiveVar::create_activevar(Function *f){
                 ||ir->is_cmp()||ir->is_fcmp()
                 ||ir->is_fp2si()||ir->is_si2fp()||ir->is_zext()){
                 for(auto val : ir->get_operands()){
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                             use_bb[&bb1].insert(val);
                     }
                 }
-                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                     def_bb[&bb1].insert(ir);
             }
             else if(ir->is_store()){
                 auto val_1 = ir->get_operand(0);
                 auto val_2 = ir->get_operand(1);
-                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)){
+                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)
+                    &&!dynamic_cast<GlobalVariable *>(val_1)){
                     if(use_bb[&bb1].count(val_1)==0&&def_bb[&bb1].count(val_1)==0)
                             use_bb[&bb1].insert(val_1);
                 }
                 if(use_bb[&bb1].count(val_2)==0&&def_bb[&bb1].count(val_2)==0)
-                    def_bb[&bb1].insert(val_2);
+                    use_bb[&bb1].insert(val_2);
             }
             else if(ir->is_load()){
                 auto val_1 = ir->get_operand(0);
-                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)){
+                if(!dynamic_cast<ConstantInt *>(val_1)&&!dynamic_cast<ConstantFP *>(val_1)
+                    &&!dynamic_cast<GlobalVariable *>(val_1)){
                     if(use_bb[&bb1].count(val_1)==0&&def_bb[&bb1].count(val_1)==0)
                             use_bb[&bb1].insert(val_1);
                 }
-                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                     def_bb[&bb1].insert(ir);
             }
             else if(ir->is_br()){
                 auto _ir = dynamic_cast<BranchInst *>(ir);
                 if(_ir->is_cond_br()){
                     auto val = _ir->get_operand(0);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                                 use_bb[&bb1].insert(val);
                     }
@@ -64,20 +68,22 @@ void ActiveVar::create_activevar(Function *f){
             else if(ir->is_call()){
                 for(auto val : ir->get_operands()){
                     if(val->get_type()->is_function_type()) continue;
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                                 use_bb[&bb1].insert(val);
                     }
                 }
                 if(!ir->is_void()){
-                    if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                    if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                         def_bb[&bb1].insert(ir);
                 }
             }
             else if(ir->is_ret()){
                 if(!ir->is_void()){
                     auto val = ir->get_operand(0);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                                 use_bb[&bb1].insert(val);
                     }
@@ -86,26 +92,28 @@ void ActiveVar::create_activevar(Function *f){
             else if(ir->is_phi()){
                 for(long unsigned int i=0; i<ir->get_num_operand()/2; i++){
                     auto val = ir->get_operand(2*i);
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                             use_bb[&bb1].insert(val);
                     }
                 }
-                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                     def_bb[&bb1].insert(ir);
             }
             else if(ir->is_gep()){
                 for(auto val : ir->get_operands()){
-                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)){
+                    if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
+                        &&!dynamic_cast<GlobalVariable *>(val)){
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                                 use_bb[&bb1].insert(val);
                     }
                 }
-                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                     def_bb[&bb1].insert(ir);
             }
             else if(ir->is_alloca()){
-                if(def_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0)
+                if(def_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
                     def_bb[&bb1].insert(ir);
             }
         }

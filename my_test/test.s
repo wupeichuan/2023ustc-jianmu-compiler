@@ -1,77 +1,228 @@
+# Global variables
 	.text
-	.globl gcd
-	.type gcd, @function
-gcd:
+	.section .bss, "aw", @nobits
+	.globl seed
+	.type seed, @object
+	.size seed, 4
+seed:
+	.space 4
+	.text
+	.globl randomLCG
+	.type randomLCG, @function
+randomLCG:
+	st.d $ra, $sp, -8
+	st.d $fp, $sp, -16
+	addi.d $fp, $sp, 0
+	addi.d $sp, $sp, -32
+.randomLCG_label_entry:
+# %op0 = load i32, i32* @seed
+	la.local $t8, seed
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -20
+# %op1 = mul i32 %op0, 1103515245
+	ld.w $t7, $fp, -20
+	lu12i.w $t8, 269412
+	ori $t8, $t8, 3693
+	mul.w $t7, $t7, $t8
+	st.w $t7, $fp, -24
+# %op2 = add i32 %op1, 12345
+	ld.w $t7, $fp, -24
+	lu12i.w $t8, 3
+	ori $t8, $t8, 57
+	add.w $t7, $t7, $t8
+	st.w $t7, $fp, -28
+# store i32 %op2, i32* @seed
+	ld.w $t7, $fp, -28
+	la.local $t8, seed
+	st.w $t7, $t8, 0
+# %op3 = load i32, i32* @seed
+	la.local $t8, seed
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -32
+# ret i32 %op3
+	ld.w $a0, $fp, -32
+	b randomLCG_exit
+randomLCG_exit:
+	addi.d $sp, $sp, 32
+	ld.d $ra, $sp, -8
+	ld.d $fp, $sp, -16
+	jr $ra
+	.globl randBin
+	.type randBin, @function
+randBin:
+	st.d $ra, $sp, -8
+	st.d $fp, $sp, -16
+	addi.d $fp, $sp, 0
+	addi.d $sp, $sp, -32
+.randBin_label_entry:
+# %op0 = call i32 @randomLCG()
+	bl randomLCG
+	st.w $a0, $fp, -20
+# %op1 = icmp sgt i32 %op0, 0
+	ld.w $t7, $fp, -20
+	addi.w $t8, $zero, 0
+	slt $t7, $t8, $t7
+	st.b $t7, $fp, -21
+# br i1 %op1, label %label2, label %label3
+	ld.b $t7, $fp, -21
+	bnez $t7, .randBin_label2
+	b .randBin_label3
+.randBin_label2:
+# ret i32 1
+	addi.w $a0, $zero, 1
+	b randBin_exit
+.randBin_label3:
+# ret i32 0
+	addi.w $a0, $zero, 0
+	b randBin_exit
+.randBin_label4:
+# ret i32 0
+	addi.w $a0, $zero, 0
+	b randBin_exit
+randBin_exit:
+	addi.d $sp, $sp, 32
+	ld.d $ra, $sp, -8
+	ld.d $fp, $sp, -16
+	jr $ra
+	.globl returnToZeroSteps
+	.type returnToZeroSteps, @function
+returnToZeroSteps:
 	st.d $ra, $sp, -8
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -112
-	add.d $t0, $a0, $zero
-	add.d $t1, $a1, $zero
-.gcd_label_entry:
-# %op2 = alloca i32
-	addi.d $t8, $fp, -36
-	addi.d $t7, $fp, -32
+.returnToZeroSteps_label_entry:
+# %op0 = alloca i32
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
 	st.d $t8, $t7, 0
-# store i32 %arg0, i32* %op2
-	ld.d $t7, $fp, -32
-	st.w $t0, $t7, 0
-# %op3 = alloca i32
-	addi.d $t0, $fp, -52
-# store i32 %arg1, i32* %op3
-	st.w $t1, $t0, 0
-# %op4 = load i32, i32* %op3
-	ld.w $t1, $t0, 0
-# %op5 = icmp eq i32 %op4, 0
+# %op1 = alloca i32
+	addi.d $t8, $fp, -44
+	addi.d $t7, $fp, -40
+	st.d $t8, $t7, 0
+# store i32 0, i32* %op0
+	addi.w $t7, $zero, 0
+	ld.d $t8, $fp, -24
+	st.w $t7, $t8, 0
+# store i32 0, i32* %op1
+	addi.w $t7, $zero, 0
+	ld.d $t8, $fp, -40
+	st.w $t7, $t8, 0
+# %op2 = load i32, i32* %op1
+	ld.d $t8, $fp, -40
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -48
+# %op3 = icmp slt i32 %op2, 20
+	ld.w $t7, $fp, -48
+	addi.w $t8, $zero, 20
+	slt $t7, $t7, $t8
+	st.b $t7, $fp, -49
+# br i1 %op3, label %label4, label %label7
+	ld.b $t7, $fp, -49
+	bnez $t7, .returnToZeroSteps_label4
+	b .returnToZeroSteps_label7
+.returnToZeroSteps_label4:
+# %op5 = call i32 @randBin()
+	bl randBin
+	st.w $a0, $fp, -56
+# %op6 = icmp ne i32 %op5, 0
+	ld.w $t7, $fp, -56
 	addi.w $t8, $zero, 0
-	xor $t7, $t1, $t8
+	xor $t7, $t7, $t8
 	sltu $t7, $zero, $t7
-	xori $t1, $t7, 1
-# br i1 %op5, label %label6, label %label8
-	bnez $t1, .gcd_label6
-	b .gcd_label8
-.gcd_label6:
-# %op7 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
-# ret i32 %op7
-	add.w $a0, $t1, $zero
-	b gcd_exit
-.gcd_label8:
-# %op9 = load i32, i32* %op3
-	ld.w $t7, $t0, 0
+	st.b $t7, $fp, -57
+# br i1 %op6, label %label8, label %label11
+	ld.b $t7, $fp, -57
+	bnez $t7, .returnToZeroSteps_label8
+	b .returnToZeroSteps_label11
+.returnToZeroSteps_label7:
+# ret i32 20
+	addi.w $a0, $zero, 20
+	b returnToZeroSteps_exit
+.returnToZeroSteps_label8:
+# %op9 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -64
+# %op10 = add i32 %op9, 1
+	ld.w $t7, $fp, -64
+	addi.w $t8, $zero, 1
+	add.w $t7, $t7, $t8
 	st.w $t7, $fp, -68
-# %op10 = load i32, i32* %op3
-	ld.w $t7, $t0, 0
+# store i32 %op10, i32* %op0
+	ld.w $t7, $fp, -68
+	ld.d $t8, $fp, -24
+	st.w $t7, $t8, 0
+# br label %label14
+	b .returnToZeroSteps_label14
+.returnToZeroSteps_label11:
+# %op12 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
 	st.w $t7, $fp, -72
-# %op11 = load i32, i32* %op3
-	ld.w $t0, $t0, 0
-# %op12 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
-# %op13 = sdiv i32 %op12, %op11
-	div.w $t0, $t1, $t0
-# %op14 = mul i32 %op13, %op10
-	ld.w $t8, $fp, -72
-	mul.w $t0, $t0, $t8
-# %op15 = load i32, i32* %op2
-	ld.d $t8, $fp, -32
-	ld.w $t1, $t8, 0
-# %op16 = sub i32 %op15, %op14
-	sub.w $t0, $t1, $t0
-# %op17 = call i32 @gcd(i32 %op9, i32 %op16)
-	ld.w $a0, $fp, -68
-	add.d $a1, $t0, $zero
-	bl gcd
-	add.w $t0, $a0, $zero
-# ret i32 %op17
-	add.w $a0, $t0, $zero
-	b gcd_exit
-.gcd_label18:
-# ret i32 0
-	addi.w $a0, $zero, 0
-	b gcd_exit
-gcd_exit:
+# %op13 = sub i32 %op12, 1
+	ld.w $t7, $fp, -72
+	addi.w $t8, $zero, 1
+	sub.w $t7, $t7, $t8
+	st.w $t7, $fp, -76
+# store i32 %op13, i32* %op0
+	ld.w $t7, $fp, -76
+	ld.d $t8, $fp, -24
+	st.w $t7, $t8, 0
+# br label %label14
+	b .returnToZeroSteps_label14
+.returnToZeroSteps_label14:
+# %op15 = load i32, i32* %op1
+	ld.d $t8, $fp, -40
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -80
+# %op16 = add i32 %op15, 1
+	ld.w $t7, $fp, -80
+	addi.w $t8, $zero, 1
+	add.w $t7, $t7, $t8
+	st.w $t7, $fp, -84
+# store i32 %op16, i32* %op1
+	ld.w $t7, $fp, -84
+	ld.d $t8, $fp, -40
+	st.w $t7, $t8, 0
+# %op17 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -88
+# %op18 = icmp eq i32 %op17, 0
+	ld.w $t7, $fp, -88
+	addi.w $t8, $zero, 0
+	xor $t7, $t7, $t8
+	sltu $t7, $zero, $t7
+	xori $t7, $t7, 1
+	st.b $t7, $fp, -89
+# br i1 %op18, label %label19, label %label21
+	ld.b $t7, $fp, -89
+	bnez $t7, .returnToZeroSteps_label19
+	b .returnToZeroSteps_label21
+.returnToZeroSteps_label19:
+# %op20 = load i32, i32* %op1
+	ld.d $t8, $fp, -40
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -96
+# ret i32 %op20
+	ld.w $a0, $fp, -96
+	b returnToZeroSteps_exit
+.returnToZeroSteps_label21:
+# %op22 = load i32, i32* %op1
+	ld.d $t8, $fp, -40
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -100
+# %op23 = icmp slt i32 %op22, 20
+	ld.w $t7, $fp, -100
+	addi.w $t8, $zero, 20
+	slt $t7, $t7, $t8
+	st.b $t7, $fp, -101
+# br i1 %op23, label %label4, label %label7
+	ld.b $t7, $fp, -101
+	bnez $t7, .returnToZeroSteps_label4
+	b .returnToZeroSteps_label7
+returnToZeroSteps_exit:
 	addi.d $sp, $sp, 112
 	ld.d $ra, $sp, -8
 	ld.d $fp, $sp, -16
@@ -82,53 +233,73 @@ main:
 	st.d $ra, $sp, -8
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
-	addi.d $sp, $sp, -48
+	addi.d $sp, $sp, -64
 .main_label_entry:
-# %op0 = add i32 435, 1
-	addi.w $t7, $zero, 435
-	addi.w $t8, $zero, 1
-	add.w $t0, $t7, $t8
-# %op1 = icmp sge i32 135, %op0
-	addi.w $t8, $zero, 135
-	slt $t7, $t0, $t8
-	xor $t8, $t0, $t8
-	sltu $t8, $zero, $t8
-	xori $t8, $t8, 1
-	or $t0, $t7, $t8
-# br i1 %op1, label %label2, label %label3
-	bnez $t0, .main_label2
-# %op4 = phi i32 [ 135, %label_entry ], [ 435, %label2 ]
-	addi.w $t7, $zero, 135
-	add.d $t0, $t7, $zero
-# %op5 = phi i32 [ 435, %label_entry ], [ 135, %label2 ]
-	addi.w $t7, $zero, 435
-	add.d $t1, $t7, $zero
-	b .main_label3
-.main_label2:
-# br label %label3
-# %op5 = phi i32 [ 435, %label_entry ], [ 135, %label2 ]
-	addi.w $t7, $zero, 135
-	add.d $t1, $t7, $zero
-# %op4 = phi i32 [ 135, %label_entry ], [ 435, %label2 ]
-	addi.w $t7, $zero, 435
-	add.d $t0, $t7, $zero
-	b .main_label3
+# %op0 = alloca i32
+	addi.d $t8, $fp, -28
+	addi.d $t7, $fp, -24
+	st.d $t8, $t7, 0
+# store i32 0, i32* %op0
+	addi.w $t7, $zero, 0
+	ld.d $t8, $fp, -24
+	st.w $t7, $t8, 0
+# store i32 3407, i32* @seed
+	lu12i.w $t7, 0
+	ori $t7, $t7, 3407
+	la.local $t8, seed
+	st.w $t7, $t8, 0
+# %op1 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -32
+# %op2 = icmp slt i32 %op1, 20
+	ld.w $t7, $fp, -32
+	addi.w $t8, $zero, 20
+	slt $t7, $t7, $t8
+	st.b $t7, $fp, -33
+# br i1 %op2, label %label3, label %label9
+	ld.b $t7, $fp, -33
+	bnez $t7, .main_label3
+	b .main_label9
 .main_label3:
-# %op4 = phi i32 [ 135, %label_entry ], [ 435, %label2 ]
-# %op5 = phi i32 [ 435, %label_entry ], [ 135, %label2 ]
-# %op6 = call i32 @gcd(i32 %op5, i32 %op4)
-	add.d $a0, $t1, $zero
-	add.d $a1, $t0, $zero
-	bl gcd
-	add.w $t0, $a0, $zero
-# call void @output(i32 %op6)
-	add.d $a0, $t0, $zero
+# %op4 = call i32 @returnToZeroSteps()
+	bl returnToZeroSteps
+	st.w $a0, $fp, -40
+# call void @output(i32 %op4)
+	ld.w $a0, $fp, -40
 	bl output
-# ret void
+# %op5 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -44
+# %op6 = add i32 %op5, 1
+	ld.w $t7, $fp, -44
+	addi.w $t8, $zero, 1
+	add.w $t7, $t7, $t8
+	st.w $t7, $fp, -48
+# store i32 %op6, i32* %op0
+	ld.w $t7, $fp, -48
+	ld.d $t8, $fp, -24
+	st.w $t7, $t8, 0
+# %op7 = load i32, i32* %op0
+	ld.d $t8, $fp, -24
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -52
+# %op8 = icmp slt i32 %op7, 20
+	ld.w $t7, $fp, -52
+	addi.w $t8, $zero, 20
+	slt $t7, $t7, $t8
+	st.b $t7, $fp, -53
+# br i1 %op8, label %label3, label %label9
+	ld.b $t7, $fp, -53
+	bnez $t7, .main_label3
+	b .main_label9
+.main_label9:
+# ret i32 0
 	addi.w $a0, $zero, 0
 	b main_exit
 main_exit:
-	addi.d $sp, $sp, 48
+	addi.d $sp, $sp, 64
 	ld.d $ra, $sp, -8
 	ld.d $fp, $sp, -16
 	jr $ra

@@ -572,7 +572,7 @@ void CodeGen::gen_float_binary() {
                 assert(false);
             }
         }
-        else if(m->get_handle(context.inst->get_operand(0))==-1&&m->get_handle(context.inst->get_operand(1))!=-1){
+        else if(m->get_handle(context.inst->get_operand(0))!=-1&&m->get_handle(context.inst->get_operand(1))==-1){
             load_to_freg(context.inst->get_operand(1), FReg::ft(14));
             switch (context.inst->get_instr_type()){
             case Instruction::fadd:
