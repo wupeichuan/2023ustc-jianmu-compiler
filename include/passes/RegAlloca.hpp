@@ -8,8 +8,8 @@
 // #define INT_REG (8-2)
 // #define FP_REG (15-2)
 
-#define INT_REG 1
-#define FP_REG 1
+#define INT_REG 6
+#define FP_REG 13
 
 class RegAlloca : public Pass
 {

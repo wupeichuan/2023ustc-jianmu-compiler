@@ -9,17 +9,17 @@ main:
 .main_label_entry:
 # %op0 = call i32 @input()
 	bl input
-	st.w $a0, $fp, -20
+	add.w $t0, $a0, $zero
 # %op1 = icmp slt i32 0, %op0
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -20
-	slt $t1, $t7, $t8
+	addi.w $t8, $zero, 0
+	slt $t1, $t8, $t0
 # br i1 %op1, label %label2, label %label31
+	st.b $t1, $fp, -21
 # %op3 = phi i32 [ 0, %label_entry ], [ %op29, %label2 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -28
-	bnez $t1, .main_label2
+	add.d $t1, $t7, $zero
+	ld.b $t7, $fp, -21
+	bnez $t7, .main_label2
 # %op32 = phi i32 [ 0, %label_entry ], [ %op28, %label2 ]
 	addi.w $t7, $zero, 0
 	add.d $t0, $t7, $zero
@@ -51,63 +51,58 @@ main:
 	fmul.s $ft0, $ft0, $ft14
 # %op8 = fptosi float %op7 to i32
 	ftintrz.w.s $ft14, $ft0
-	movfr2gr.s $t0, $ft14
+	movfr2gr.s $t2, $ft14
 # %op9 = mul i32 %op8, %op8
-	mul.w $t1, $t0, $t0
+	mul.w $t3, $t2, $t2
 # %op10 = mul i32 %op9, %op8
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op11 = mul i32 %op10, %op8
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op12 = mul i32 %op11, %op8
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op13 = mul i32 %op12, %op8
-	mul.w $t0, $t1, $t0
+	mul.w $t2, $t3, $t2
 # %op14 = mul i32 %op13, %op13
-	mul.w $t1, $t0, $t0
+	mul.w $t3, $t2, $t2
 # %op15 = mul i32 %op14, %op13
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op16 = mul i32 %op15, %op13
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op17 = mul i32 %op16, %op13
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op18 = mul i32 %op17, %op13
-	mul.w $t0, $t1, $t0
+	mul.w $t2, $t3, $t2
 # %op19 = mul i32 %op18, %op18
-	mul.w $t1, $t0, $t0
+	mul.w $t3, $t2, $t2
 # %op20 = mul i32 %op19, %op18
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op21 = mul i32 %op20, %op18
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op22 = mul i32 %op21, %op18
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op23 = mul i32 %op22, %op18
-	mul.w $t0, $t1, $t0
+	mul.w $t2, $t3, $t2
 # %op24 = mul i32 %op23, %op23
-	mul.w $t1, $t0, $t0
+	mul.w $t3, $t2, $t2
 # %op25 = mul i32 %op24, %op23
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op26 = mul i32 %op25, %op23
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op27 = mul i32 %op26, %op23
-	mul.w $t1, $t1, $t0
+	mul.w $t3, $t3, $t2
 # %op28 = mul i32 %op27, %op23
-	mul.w $t7, $t1, $t0
-	st.w $t7, $fp, -128
+	mul.w $t2, $t3, $t2
 # %op29 = add i32 %op3, 1
-	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 1
-	add.w $t1, $t7, $t8
+	add.w $t1, $t1, $t8
 # %op30 = icmp slt i32 %op29, %op0
-	ld.w $t8, $fp, -20
-	slt $t0, $t1, $t8
+	slt $t3, $t1, $t0
 # br i1 %op30, label %label2, label %label31
 # %op3 = phi i32 [ 0, %label_entry ], [ %op29, %label2 ]
-	add.d $t7, $t1, $zero
-	st.w $t7, $fp, -28
-	bnez $t0, .main_label2
+	add.d $t1, $t1, $zero
+	bnez $t3, .main_label2
 # %op32 = phi i32 [ 0, %label_entry ], [ %op28, %label2 ]
-	ld.w $t7, $fp, -128
-	add.d $t0, $t7, $zero
+	add.d $t0, $t2, $zero
 	b .main_label31
 .main_label31:
 # %op32 = phi i32 [ 0, %label_entry ], [ %op28, %label2 ]

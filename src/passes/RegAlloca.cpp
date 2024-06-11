@@ -307,6 +307,7 @@ void RegAlloca::expire_old(Value* val){
 }
 void RegAlloca::spill(Value* val){
     if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+        if(ractive_.size()==0) return;
         auto iter = ractive_.end();
         iter--;
         auto vval = *iter;
@@ -328,6 +329,7 @@ void RegAlloca::spill(Value* val){
         }
     }
     else{
+        if(factive_.size()==0) return;
         auto iter = factive_.end();
         auto vval = *iter;
         if(get_end(vval)>=get_end(val)){
