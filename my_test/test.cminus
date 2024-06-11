@@ -1,14 +1,22 @@
-int main(void){
-    int i;
-    int N;
-    int j;
-    i=0;
-    N=10;
-    j=0;
-    while(i<N){
-        i=i+1;
-        j=i+2;
+int gcd(int u, int v) {
+    if (v == 0)
+        return u;
+    else
+        return gcd(v, u - u / v * v);
+}
+
+void main(void) {
+    int x;
+    int y;
+    int temp;
+    x = 435;
+    y = 135;
+    if (y >= (x+1)) {
+        temp = x;
+        x = y;
+        y = temp;
     }
-    output(i);
-    output(j);
+    temp = gcd(x, y);
+    output(temp);
+    return;
 }

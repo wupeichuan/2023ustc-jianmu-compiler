@@ -102,5 +102,6 @@ class CodeGen {
     std::shared_ptr<struct Node> graph_start;
     std::vector<std::set<Value*>> true_val_move;
     std::vector<std::set<Value*>> false_val_move;
-    std::set<Value*> loop_save;
+    std::set<Value*> save_val;
+    std::set<Value*> false_val;
 };

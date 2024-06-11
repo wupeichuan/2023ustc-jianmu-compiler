@@ -6,8 +6,6 @@ void ActiveVar::run(){
     for(auto &f : m_->get_functions()){
         if (f.is_declaration()) continue;
         auto func_ = &f;
-        live_in.clear();
-        live_out.clear();
         for(auto &bb1 : func_->get_basic_blocks()) {
             auto bb = &bb1;
             live_in.insert({bb,{}});
