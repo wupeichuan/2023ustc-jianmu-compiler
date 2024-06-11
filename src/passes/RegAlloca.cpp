@@ -180,6 +180,7 @@ void RegAlloca::alloca_reg(Function* f){
         auto val=*iter;
         expire_old(val);
         if(val->get_type()->is_function_type()){
+            ffun = val;
             for(auto iiter=ractive_.begin();iiter!=ractive_.end();iiter++){
                 auto temp = *iiter;
                 handle_.erase(temp);
@@ -193,6 +194,9 @@ void RegAlloca::alloca_reg(Function* f){
             for(int i=0;i<=INT_REG;i++) free_greg.insert(i);
             for(int i=0;i<=FP_REG;i++) free_freg.insert(i);
         }
+        // because all the function call of a same function cannot be distinguish,
+        // we have to simply merge the range these function call 
+        else if(get_start(val)<get_end(ffun)) continue; 
         else if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
             if(free_greg.size()==0){
                 spill(val);

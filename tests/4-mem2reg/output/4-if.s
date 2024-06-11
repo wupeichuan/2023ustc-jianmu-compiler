@@ -26,9 +26,11 @@ main:
 # %op4 = icmp slt i32 33, 22
 	addi.w $t7, $zero, 33
 	addi.w $t8, $zero, 22
-	slt $t0, $t7, $t8
+	slt $t7, $t7, $t8
+	st.b $t7, $fp, -19
 # br i1 %op4, label %label9, label %label10
-	bnez $t0, .main_label9
+	ld.b $t7, $fp, -19
+	bnez $t7, .main_label9
 	b .main_label10
 .main_label5:
 # ret i32 0

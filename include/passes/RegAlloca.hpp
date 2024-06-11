@@ -37,4 +37,5 @@ private:
     std::set<int> free_freg;
     std::map<Value*,struct time> interval_;
     std::unique_ptr<ActiveVar> activevar_;
+    Value* ffun;
 };
