@@ -87,14 +87,14 @@ returnToZeroSteps:
 	addi.w $t8, $zero, 20
 	slt $t0, $t7, $t8
 # br i1 %op0, label %label1, label %label6
-# %op2 = phi i32 [ 0, %label_entry ], [ %op13, %label16 ]
-	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -24
 # %op3 = phi i32 [ 0, %label_entry ], [ %op12, %label16 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -28
+# %op2 = phi i32 [ 0, %label_entry ], [ %op13, %label16 ]
+	addi.w $t7, $zero, 0
+	add.d $t7, $t7, $zero
+	st.w $t7, $fp, -24
 	bnez $t0, .returnToZeroSteps_label1
 	b .returnToZeroSteps_label6
 .returnToZeroSteps_label1:
@@ -102,16 +102,13 @@ returnToZeroSteps:
 # %op3 = phi i32 [ 0, %label_entry ], [ %op12, %label16 ]
 # %op4 = call i32 @randBin()
 	bl randBin
-	st.w $a0, $fp, -32
+	add.w $t0, $a0, $zero
 # %op5 = icmp ne i32 %op4, 0
-	ld.w $t7, $fp, -32
 	addi.w $t8, $zero, 0
-	xor $t7, $t7, $t8
-	sltu $t7, $zero, $t7
-	st.b $t7, $fp, -33
+	xor $t7, $t0, $t8
+	sltu $t0, $zero, $t7
 # br i1 %op5, label %label7, label %label9
-	ld.b $t7, $fp, -33
-	bnez $t7, .returnToZeroSteps_label7
+	bnez $t0, .returnToZeroSteps_label7
 	b .returnToZeroSteps_label9
 .returnToZeroSteps_label6:
 # ret i32 20
@@ -121,12 +118,10 @@ returnToZeroSteps:
 # %op8 = add i32 %op3, 1
 	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -40
+	add.w $t0, $t7, $t8
 # br label %label11
 # %op12 = phi i32 [ %op8, %label7 ], [ %op10, %label9 ]
-	ld.w $t7, $fp, -40
-	add.d $t7, $t7, $zero
+	add.d $t7, $t0, $zero
 	st.w $t7, $fp, -48
 	b .returnToZeroSteps_label11
 .returnToZeroSteps_label9:
@@ -153,11 +148,9 @@ returnToZeroSteps:
 	addi.w $t8, $zero, 0
 	xor $t7, $t7, $t8
 	sltu $t7, $zero, $t7
-	xori $t7, $t7, 1
-	st.b $t7, $fp, -53
+	xori $t1, $t7, 1
 # br i1 %op14, label %label15, label %label16
-	ld.b $t7, $fp, -53
-	bnez $t7, .returnToZeroSteps_label15
+	bnez $t1, .returnToZeroSteps_label15
 	b .returnToZeroSteps_label16
 .returnToZeroSteps_label15:
 # ret i32 %op13
@@ -167,19 +160,17 @@ returnToZeroSteps:
 # %op17 = icmp slt i32 %op13, 20
 	ld.w $t7, $fp, -52
 	addi.w $t8, $zero, 20
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -54
+	slt $t1, $t7, $t8
 # br i1 %op17, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op13, %label16 ]
 	ld.w $t7, $fp, -52
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -24
-	ld.b $t7, $fp, -54
-	bnez $t7, .returnToZeroSteps_label1
-# %op12 = phi i32 [ %op8, %label7 ], [ %op10, %label9 ]
-	ld.w $t7, $fp, -28
+# %op3 = phi i32 [ 0, %label_entry ], [ %op12, %label16 ]
+	ld.w $t7, $fp, -48
 	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -48
+	st.w $t7, $fp, -28
+	bnez $t1, .returnToZeroSteps_label1
 	b .returnToZeroSteps_label6
 returnToZeroSteps_exit:
 	addi.d $sp, $sp, 64
@@ -214,24 +205,21 @@ main:
 # %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]
 # %op3 = call i32 @returnToZeroSteps()
 	bl returnToZeroSteps
-	add.w $t1, $a0, $zero
+	add.w $t0, $a0, $zero
 # call void @output(i32 %op3)
-	add.d $a0, $t1, $zero
+	add.d $a0, $t0, $zero
 	bl output
 # %op4 = add i32 %op2, 1
 	ld.w $t7, $fp, -24
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -32
+	add.w $t0, $t7, $t8
 # %op5 = icmp slt i32 %op4, 20
-	ld.w $t7, $fp, -32
 	addi.w $t8, $zero, 20
-	slt $t1, $t7, $t8
+	slt $t1, $t0, $t8
 # br i1 %op5, label %label1, label %label6
-# %op4 = add i32 %op2, 1
-	ld.w $t7, $fp, -24
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -32
+# %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]
+	add.d $t7, $t0, $zero
+	st.w $t7, $fp, -24
 	bnez $t1, .main_label1
 	b .main_label6
 .main_label6:

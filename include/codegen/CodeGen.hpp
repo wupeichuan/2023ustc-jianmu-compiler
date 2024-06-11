@@ -4,12 +4,12 @@
 #include "Module.hpp"
 #include "Register.hpp"
 #include <memory>
-
+#include <unordered_set>
 struct Node{
-    std::set<Value*> val;
-    std::set<std::shared_ptr<struct Node>> succ;
-    std::set<std::shared_ptr<struct Node>> pre;
-    std::map<std::shared_ptr<struct Node>,std::vector<std::set<Value*>>> pair;
+    std::unordered_set<Value*> val;
+    std::unordered_set<std::shared_ptr<struct Node>> succ;
+    std::unordered_set<std::shared_ptr<struct Node>> pre;
+    std::map<std::shared_ptr<struct Node>,std::vector<std::vector<Value*>>> pair;
 };
 
 class CodeGen {
@@ -73,7 +73,7 @@ class CodeGen {
     void phi_resort(BasicBlock* bb);
     void create_graph(BasicBlock* bb);
     std::shared_ptr<struct Node> find(Value* val);
-    void move_data(std::vector<std::set<Value*>> val_move);
+    void move_data(std::vector<std::vector<Value*>> val_move);
 
     static std::string label_name(BasicBlock *bb) {
         return "." + bb->get_parent()->get_name() + "_" + bb->get_name();
@@ -100,8 +100,8 @@ class CodeGen {
     std::list<ASMInstruction> output;
 
     std::shared_ptr<struct Node> graph_start;
-    std::vector<std::set<Value*>> true_val_move;
-    std::vector<std::set<Value*>> false_val_move;
-    std::set<Value*> save_val;
-    std::set<Value*> false_val;
+    std::vector<std::vector<Value*>> true_val_move;
+    std::vector<std::vector<Value*>> false_val_move;
+    std::unordered_set<Value*> save_val;
+    std::unordered_set<Value*> false_val;
 };

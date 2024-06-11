@@ -2061,7 +2061,10 @@ void CodeGen::phi_resort(BasicBlock* bb){
             else if(*(stack.back()->succ.begin())==stack.back()){
                 if(stack.back()->succ.size()>1){
                     stack.back()->succ.erase(stack.back()->succ.begin());
+                    auto temp = *stack.back()->succ.begin();
+                    stack.back()->succ.erase(stack.back()->succ.begin());
                     stack.back()->succ.insert(stack.back()->succ.end(),stack.back());
+                    stack.back()->succ.insert(stack.back()->succ.end(),temp);
                     continue;
                 }
                 else{
@@ -2137,7 +2140,7 @@ void CodeGen::phi_resort(BasicBlock* bb){
         }
     }
 }
-void CodeGen::move_data(std::vector<std::set<Value*>> val_move){
+void CodeGen::move_data(std::vector<std::vector<Value*>> val_move){
     for(auto move_set : val_move){
         Value* val_from = *move_set.begin();
         auto it = move_set.begin(); it++;

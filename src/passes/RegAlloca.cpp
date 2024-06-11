@@ -190,6 +190,8 @@ void RegAlloca::alloca_reg(Function* f){
             }
             ractive_.clear();
             factive_.clear();
+            for(int i=0;i<=INT_REG;i++) free_greg.insert(i);
+            for(int i=0;i<=FP_REG;i++) free_freg.insert(i);
         }
         else if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
             if(free_greg.size()==0){

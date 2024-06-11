@@ -60,15 +60,15 @@ store:
 .store_label12:
 # %op13 = load i32, i32* %op5
 	ld.d $t8, $fp, -72
-	ld.w $t1, $t8, 0
+	ld.w $t0, $t8, 0
 # store i32 %op13, i32* %op10
 	ld.d $t7, $fp, -104
-	st.w $t1, $t7, 0
+	st.w $t0, $t7, 0
 # %op14 = load i32, i32* %op5
 	ld.d $t8, $fp, -72
-	ld.w $t1, $t8, 0
+	ld.w $t0, $t8, 0
 # ret i32 %op14
-	add.w $a0, $t1, $zero
+	add.w $a0, $t0, $zero
 	b store_exit
 store_exit:
 	addi.d $sp, $sp, 112
@@ -135,19 +135,18 @@ main:
 	addi.w $t8, $zero, 10
 	slt $t0, $t7, $t8
 # br i1 %op10, label %label11, label %label15
-# %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
-	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -100
 # %op13 = phi i32 [ 0, %label9 ], [ %op23, %label21 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -104
+# %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
+	addi.w $t7, $zero, 0
+	add.d $t7, $t7, $zero
+	st.w $t7, $fp, -100
 	bnez $t0, .main_label11
 # %op16 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -112
+	add.d $t0, $t7, $zero
 	b .main_label15
 .main_label11:
 # %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
@@ -166,7 +165,7 @@ main:
 .main_label15:
 # %op16 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
 # call void @output(i32 %op16)
-	ld.w $a0, $fp, -112
+	add.d $a0, $t0, $zero
 	bl output
 # ret i32 0
 	addi.w $a0, $zero, 0
@@ -197,28 +196,22 @@ main:
 # %op23 = add i32 %op13, 1
 	ld.w $t7, $fp, -104
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -132
+	add.w $t1, $t7, $t8
 # %op24 = icmp slt i32 %op23, 10
-	ld.w $t7, $fp, -132
 	addi.w $t8, $zero, 10
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -133
+	slt $t0, $t1, $t8
 # br i1 %op24, label %label11, label %label15
-# %op13 = phi i32 [ 0, %label9 ], [ %op23, %label21 ]
-	ld.w $t7, $fp, -132
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -104
 # %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
 	ld.w $t7, $fp, -128
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -100
-	ld.b $t7, $fp, -133
-	bnez $t7, .main_label11
+# %op13 = phi i32 [ 0, %label9 ], [ %op23, %label21 ]
+	add.d $t7, $t1, $zero
+	st.w $t7, $fp, -104
+	bnez $t0, .main_label11
 # %op16 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
 	ld.w $t7, $fp, -128
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -112
+	add.d $t0, $t7, $zero
 	b .main_label15
 main_exit:
 	addi.d $sp, $sp, 144

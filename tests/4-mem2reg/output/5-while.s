@@ -26,16 +26,13 @@ main:
 # %op3 = add i32 %op2, 1
 	ld.w $t7, $fp, -24
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -28
+	add.w $t0, $t7, $t8
 # %op4 = icmp slt i32 %op3, 10
-	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 10
-	slt $t1, $t7, $t8
+	slt $t1, $t0, $t8
 # br i1 %op4, label %label1, label %label5
 # %op2 = phi i32 [ 0, %label_entry ], [ %op3, %label1 ]
-	ld.w $t7, $fp, -28
-	add.d $t7, $t7, $zero
+	add.d $t7, $t0, $zero
 	st.w $t7, $fp, -24
 	bnez $t1, .main_label1
 	b .main_label5
