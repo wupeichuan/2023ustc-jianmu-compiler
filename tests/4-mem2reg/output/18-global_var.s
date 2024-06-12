@@ -21,10 +21,9 @@ main:
 	st.w $t7, $t8, 0
 # %op0 = load i32, i32* @a
 	la.local $t8, a
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -20
+	ld.w $t0, $t8, 0
 # ret i32 %op0
-	ld.w $a0, $fp, -20
+	add.w $a0, $t0, $zero
 	b main_exit
 main_exit:
 	addi.d $sp, $sp, 32

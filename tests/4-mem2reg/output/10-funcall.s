@@ -6,16 +6,12 @@ test:
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -48
-	st.w $a0, $fp, -20
+	add.d $t0, $a0, $zero
 .test_label_entry:
 # %op1 = alloca i32
-	addi.d $t8, $fp, -36
-	addi.d $t7, $fp, -32
-	st.d $t8, $t7, 0
+	addi.d $t1, $fp, -36
 # store i32 %arg0, i32* %op1
-	ld.w $t7, $fp, -20
-	ld.d $t8, $fp, -32
-	st.w $t7, $t8, 0
+	st.w $t0, $t1, 0
 # ret void
 	addi.w $a0, $zero, 0
 	b test_exit

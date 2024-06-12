@@ -1,71 +1,51 @@
-/*
-     This code is adapted from Dik T. Winter at CWI
-     It computes pi to 800 decimal digits
- */
+/* this is the sample program in C- in the book "Compiler Construction" */
+/* A program to perform selection sort on a 10 element array. */
+float x[10];
+int minloc(float a[], float low, int high) {
+    int i;
+    int x;
+    int k;
+    k = low;
+    x = a[low];
+    i = low + 1;
+    while (i < high) {
+        if (a[i] < x) {
+            x = a[i];
+            k = i;
+        }
+        i = i + 1;
+    }
+    return k;
+}
 
-int mod(int a, int b) { return a - a / b * b; }
-
-void printfour(int input) {
-    int a;
-    int b;
-    int c;
-    int d;
-    input = mod(input, 10000);
-    d = mod(input, 10);
-    input = input / 10;
-    c = mod(input, 10);
-    input = input / 10;
-    b = mod(input, 10);
-    input = input / 10;
-    a = input;
-    output(a);
-    output(b);
-    output(c);
-    output(d);
+void sort(float a[], int low, float high) {
+    int i;
+    int k;
+    i = low;
+    while (i < high - 1) {
+        
+        int t;
+        outputFloat(1);
+        k = minloc(a, i, high);
+        t = a[k];
+        a[k] = a[i];
+        a[i] = t;
+        i = i + 1;
+    }
     return;
 }
 
 void main(void) {
-    int r[2801];
     int i;
-    int k;
-    int b;
-    int d;
-    int c;
-    c = 0;
-    d = 1234;
-
-    {
-        int mod;
-        mod = 0;
-        while (mod < 2800) {
-            r[mod] = 2000;
-            mod = mod + 1;
-        }
+    i = 0;
+    while (i < 10) {
+        x[i] = 10.22*i*i*i*i*i-38.55*i*i*i+100*i*i-244*i;
+        i = i + 1;
     }
-
-    k = 2800;
-    while (k) {
-        int d;
-        d = 0;
-        i = k;
-
-        while (i != 0) {
-            d = d + r[i] * 10000;
-            b = 2 * i - 1;
-            r[i] = mod(d, b);
-            d = d / b;
-            i = i - 1;
-            if (i != 0) {
-                d = d * i;
-            }
-        }
-
-        printfour(c + d / 10000);
-        c = mod(d, 10000);
-
-        k = k - 14;
+    sort(x, 0, 10);
+    i = 0;
+    while (i < 10) {
+        i = i + 1;
     }
-
     return;
 }

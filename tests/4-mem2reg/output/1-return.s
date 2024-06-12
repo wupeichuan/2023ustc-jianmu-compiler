@@ -7,8 +7,11 @@ main:
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -16
 .main_label_entry:
-# ret void
-	addi.w $a0, $zero, 0
+# call void @output(i32 111)
+	addi.w $a0, $zero, 111
+	bl output
+# ret i32 111
+	addi.w $a0, $zero, 111
 	b main_exit
 main_exit:
 	addi.d $sp, $sp, 16

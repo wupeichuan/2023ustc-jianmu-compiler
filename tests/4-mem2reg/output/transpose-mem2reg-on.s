@@ -27,38 +27,29 @@ readarray:
 .readarray_label_entry:
 # %op0 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -20
+	ld.w $t0, $t8, 0
 # %op1 = icmp slt i32 0, %op0
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -20
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -21
+	addi.w $t8, $zero, 0
+	slt $t0, $t8, $t0
 # br i1 %op1, label %label2, label %label5
 # %op3 = phi i32 [ 0, %label_entry ], [ %op11, %label9 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -28
-	ld.b $t7, $fp, -21
-	bnez $t7, .readarray_label2
+	bnez $t0, .readarray_label2
 	b .readarray_label5
 .readarray_label2:
 # %op3 = phi i32 [ 0, %label_entry ], [ %op11, %label9 ]
 # %op4 = icmp sge i32 %op3, 0
 	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -29
-	ld.w $t7, $fp, -28
+	slt $t1, $t8, $t7
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -29
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -29
+	or $t1, $t1, $t8
 # br i1 %op4, label %label6, label %label8
-	ld.b $t7, $fp, -29
-	bnez $t7, .readarray_label6
+	bnez $t1, .readarray_label6
 	b .readarray_label8
 .readarray_label5:
 # ret void
@@ -82,32 +73,24 @@ readarray:
 .readarray_label9:
 # %op10 = call i32 @input()
 	bl input
-	st.w $a0, $fp, -44
+	add.w $t0, $a0, $zero
 # store i32 %op10, i32* %op7
-	ld.w $t7, $fp, -44
-	ld.d $t8, $fp, -40
-	st.w $t7, $t8, 0
+	ld.d $t7, $fp, -40
+	st.w $t0, $t7, 0
 # %op11 = add i32 %op3, 1
 	ld.w $t7, $fp, -28
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -48
+	add.w $t0, $t7, $t8
 # %op12 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -52
+	ld.w $t1, $t8, 0
 # %op13 = icmp slt i32 %op11, %op12
-	ld.w $t7, $fp, -48
-	ld.w $t8, $fp, -52
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -53
+	slt $t1, $t0, $t1
 # br i1 %op13, label %label2, label %label5
 # %op3 = phi i32 [ 0, %label_entry ], [ %op11, %label9 ]
-	ld.w $t7, $fp, -48
-	add.d $t7, $t7, $zero
+	add.d $t7, $t0, $zero
 	st.w $t7, $fp, -28
-	ld.b $t7, $fp, -53
-	bnez $t7, .readarray_label2
+	bnez $t1, .readarray_label2
 	b .readarray_label5
 readarray_exit:
 	addi.d $sp, $sp, 64
@@ -121,76 +104,51 @@ transpose:
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -304
-	st.w $a0, $fp, -20
-	st.d $a1, $fp, -32
-	st.w $a2, $fp, -36
+	add.d $t0, $a0, $zero
+	add.d $t1, $a1, $zero
+	add.d $t2, $a2, $zero
 .transpose_label_entry:
 # %op3 = alloca i32
-	addi.d $t8, $fp, -52
-	addi.d $t7, $fp, -48
-	st.d $t8, $t7, 0
+	addi.d $t3, $fp, -52
 # store i32 %arg0, i32* %op3
-	ld.w $t7, $fp, -20
-	ld.d $t8, $fp, -48
-	st.w $t7, $t8, 0
+	st.w $t0, $t3, 0
 # %op4 = alloca i32*
-	addi.d $t8, $fp, -72
-	addi.d $t7, $fp, -64
-	st.d $t8, $t7, 0
+	addi.d $t0, $fp, -72
 # store i32* %arg1, i32** %op4
-	ld.d $t7, $fp, -32
-	ld.d $t8, $fp, -64
-	st.d $t7, $t8, 0
+	st.d $t1, $t0, 0
 # %op5 = alloca i32
-	addi.d $t8, $fp, -84
-	addi.d $t7, $fp, -80
-	st.d $t8, $t7, 0
+	addi.d $t1, $fp, -84
 # store i32 %arg2, i32* %op5
-	ld.w $t7, $fp, -36
-	ld.d $t8, $fp, -80
-	st.w $t7, $t8, 0
+	st.w $t2, $t1, 0
 # %op6 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -88
+	ld.w $t2, $t1, 0
 # %op7 = load i32, i32* %op3
-	ld.d $t8, $fp, -48
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -92
+	ld.w $t3, $t3, 0
 # %op8 = sdiv i32 %op7, %op6
-	ld.w $t7, $fp, -92
-	ld.w $t8, $fp, -88
-	div.w $t7, $t7, $t8
-	st.w $t7, $fp, -96
+	div.w $t2, $t3, $t2
 # %op9 = icmp slt i32 0, %op8
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -96
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -97
+	addi.w $t8, $zero, 0
+	slt $t3, $t8, $t2
 # br i1 %op9, label %label10, label %label14
+	st.b $t3, $fp, -97
 # %op11 = phi i32 [ 0, %label_entry ], [ %op20, %label19 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -104
+	add.d $t3, $t7, $zero
 	ld.b $t7, $fp, -97
 	bnez $t7, .transpose_label10
 	b .transpose_label14
 .transpose_label10:
 # %op11 = phi i32 [ 0, %label_entry ], [ %op20, %label19 ]
 # %op12 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -108
+	ld.w $t4, $t1, 0
 # %op13 = icmp slt i32 0, %op12
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -108
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -109
+	addi.w $t8, $zero, 0
+	slt $t4, $t8, $t4
 # br i1 %op13, label %label16, label %label19
+	st.b $t4, $fp, -109
 # %op17 = phi i32 [ 0, %label10 ], [ %op30, %label29 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -120
+	add.d $t4, $t7, $zero
 	ld.b $t7, $fp, -109
 	bnez $t7, .transpose_label16
 	b .transpose_label19
@@ -198,46 +156,32 @@ transpose:
 # %op15 = sub i32 0, 1
 	addi.w $t7, $zero, 0
 	addi.w $t8, $zero, 1
-	sub.w $t7, $t7, $t8
-	st.w $t7, $fp, -116
+	sub.w $t0, $t7, $t8
 # ret i32 %op15
-	ld.w $a0, $fp, -116
+	add.w $a0, $t0, $zero
 	b transpose_exit
 .transpose_label16:
 # %op17 = phi i32 [ 0, %label10 ], [ %op30, %label29 ]
 # %op18 = icmp slt i32 %op11, %op17
-	ld.w $t7, $fp, -104
-	ld.w $t8, $fp, -120
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -121
+	slt $t5, $t3, $t4
 # br i1 %op18, label %label22, label %label24
-	ld.b $t7, $fp, -121
-	bnez $t7, .transpose_label22
+	bnez $t5, .transpose_label22
 	b .transpose_label24
 .transpose_label19:
 # %op20 = add i32 %op11, 1
-	ld.w $t7, $fp, -104
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -128
+	add.w $t3, $t3, $t8
 # %op21 = icmp slt i32 %op20, %op8
-	ld.w $t7, $fp, -128
-	ld.w $t8, $fp, -96
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -129
+	slt $t6, $t3, $t2
 # br i1 %op21, label %label10, label %label14
 # %op11 = phi i32 [ 0, %label_entry ], [ %op20, %label19 ]
-	ld.w $t7, $fp, -128
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -104
-	ld.b $t7, $fp, -129
-	bnez $t7, .transpose_label10
+	add.d $t3, $t3, $zero
+	bnez $t6, .transpose_label10
 	b .transpose_label14
 .transpose_label22:
 # %op23 = add i32 %op17, 1
-	ld.w $t7, $fp, -120
-	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
+	addi.w $t7, $zero, 1
+	add.w $t7, $t4, $t7
 	st.w $t7, $fp, -136
 # br label %label29
 # %op30 = phi i32 [ %op23, %label22 ], [ %op66, %label65 ]
@@ -247,69 +191,43 @@ transpose:
 	b .transpose_label29
 .transpose_label24:
 # %op25 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -140
+	ld.w $t6, $t1, 0
 # %op26 = mul i32 %op11, %op25
-	ld.w $t7, $fp, -104
-	ld.w $t8, $fp, -140
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -144
+	mul.w $t6, $t3, $t6
 # %op27 = add i32 %op26, %op17
-	ld.w $t7, $fp, -144
-	ld.w $t8, $fp, -120
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -148
+	add.w $t6, $t6, $t4
 # %op28 = icmp sge i32 %op27, 0
-	ld.w $t7, $fp, -148
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -149
-	ld.w $t7, $fp, -148
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t6
+	xor $t8, $t8, $t6
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -149
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -149
+	or $t5, $t7, $t8
 # br i1 %op28, label %label33, label %label37
-	ld.b $t7, $fp, -149
-	bnez $t7, .transpose_label33
+	bnez $t5, .transpose_label33
 	b .transpose_label37
 .transpose_label29:
 # %op30 = phi i32 [ %op23, %label22 ], [ %op66, %label65 ]
 # %op31 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -160
+	ld.w $t6, $t1, 0
 # %op32 = icmp slt i32 %op30, %op31
-	ld.w $t7, $fp, -156
-	ld.w $t8, $fp, -160
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -161
+	ld.w $t8, $fp, -156
+	slt $t6, $t8, $t6
 # br i1 %op32, label %label16, label %label19
 # %op17 = phi i32 [ 0, %label10 ], [ %op30, %label29 ]
 	ld.w $t7, $fp, -156
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -120
-	ld.b $t7, $fp, -161
-	bnez $t7, .transpose_label16
+	add.d $t4, $t7, $zero
+	bnez $t6, .transpose_label16
 	b .transpose_label19
 .transpose_label33:
 # %op34 = load i32*, i32** %op4
-	ld.d $t8, $fp, -64
-	ld.d $t7, $t8, 0
-	st.d $t7, $fp, -176
+	ld.d $t5, $t0, 0
 # %op35 = getelementptr i32, i32* %op34, i32 %op27
-	ld.w $t8, $fp, -148
 	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
-	ld.d $t8, $fp, -176
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -184
+	mul.w $t7, $t6, $t7
+	add.d $t5, $t5, $t7
 # %op36 = load i32, i32* %op35
-	ld.d $t8, $fp, -184
-	ld.w $t7, $t8, 0
+	ld.w $t7, $t5, 0
 	st.w $t7, $fp, -188
 # br label %label38
 	b .transpose_label38
@@ -320,42 +238,26 @@ transpose:
 	b .transpose_label38
 .transpose_label38:
 # %op39 = mul i32 %op17, %op8
-	ld.w $t7, $fp, -120
-	ld.w $t8, $fp, -96
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -192
+	mul.w $t6, $t4, $t2
 # %op40 = add i32 %op39, %op11
-	ld.w $t7, $fp, -192
-	ld.w $t8, $fp, -104
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -196
+	add.w $t6, $t6, $t3
 # %op41 = icmp sge i32 %op40, 0
-	ld.w $t7, $fp, -196
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -197
-	ld.w $t7, $fp, -196
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t6
+	xor $t8, $t8, $t6
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -197
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -197
+	or $t5, $t7, $t8
 # br i1 %op41, label %label42, label %label45
-	ld.b $t7, $fp, -197
-	bnez $t7, .transpose_label42
+	bnez $t5, .transpose_label42
 	b .transpose_label45
 .transpose_label42:
 # %op43 = load i32*, i32** %op4
-	ld.d $t8, $fp, -64
-	ld.d $t7, $t8, 0
-	st.d $t7, $fp, -208
+	ld.d $t5, $t0, 0
 # %op44 = getelementptr i32, i32* %op43, i32 %op40
-	ld.w $t8, $fp, -196
 	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
-	ld.d $t8, $fp, -208
-	add.d $t7, $t8, $t7
+	mul.w $t7, $t6, $t7
+	add.d $t7, $t5, $t7
 	st.d $t7, $fp, -216
 # br label %label46
 	b .transpose_label46
@@ -366,50 +268,30 @@ transpose:
 	b .transpose_label46
 .transpose_label46:
 # %op47 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -220
+	ld.w $t6, $t1, 0
 # %op48 = mul i32 %op11, %op47
-	ld.w $t7, $fp, -104
-	ld.w $t8, $fp, -220
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -224
+	mul.w $t6, $t3, $t6
 # %op49 = add i32 %op48, %op17
-	ld.w $t7, $fp, -224
-	ld.w $t8, $fp, -120
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -228
+	add.w $t6, $t6, $t4
 # %op50 = icmp sge i32 %op49, 0
-	ld.w $t7, $fp, -228
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -229
-	ld.w $t7, $fp, -228
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t6
+	xor $t8, $t8, $t6
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -229
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -229
+	or $t5, $t7, $t8
 # br i1 %op50, label %label51, label %label55
-	ld.b $t7, $fp, -229
-	bnez $t7, .transpose_label51
+	bnez $t5, .transpose_label51
 	b .transpose_label55
 .transpose_label51:
 # %op52 = load i32*, i32** %op4
-	ld.d $t8, $fp, -64
-	ld.d $t7, $t8, 0
-	st.d $t7, $fp, -240
+	ld.d $t5, $t0, 0
 # %op53 = getelementptr i32, i32* %op52, i32 %op49
-	ld.w $t8, $fp, -228
 	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
-	ld.d $t8, $fp, -240
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -248
+	mul.w $t7, $t6, $t7
+	add.d $t5, $t5, $t7
 # %op54 = load i32, i32* %op53
-	ld.d $t8, $fp, -248
-	ld.w $t7, $t8, 0
+	ld.w $t7, $t5, 0
 	st.w $t7, $fp, -252
 # br label %label56
 	b .transpose_label56
@@ -424,47 +306,28 @@ transpose:
 	ld.d $t8, $fp, -216
 	st.w $t7, $t8, 0
 # %op57 = load i32, i32* %op5
-	ld.d $t8, $fp, -80
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -256
+	ld.w $t6, $t1, 0
 # %op58 = mul i32 %op11, %op57
-	ld.w $t7, $fp, -104
-	ld.w $t8, $fp, -256
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -260
+	mul.w $t6, $t3, $t6
 # %op59 = add i32 %op58, %op17
-	ld.w $t7, $fp, -260
-	ld.w $t8, $fp, -120
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -264
+	add.w $t6, $t6, $t4
 # %op60 = icmp sge i32 %op59, 0
-	ld.w $t7, $fp, -264
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -265
-	ld.w $t7, $fp, -264
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t6
+	xor $t8, $t8, $t6
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -265
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -265
+	or $t5, $t7, $t8
 # br i1 %op60, label %label61, label %label64
-	ld.b $t7, $fp, -265
-	bnez $t7, .transpose_label61
+	bnez $t5, .transpose_label61
 	b .transpose_label64
 .transpose_label61:
 # %op62 = load i32*, i32** %op4
-	ld.d $t8, $fp, -64
-	ld.d $t7, $t8, 0
-	st.d $t7, $fp, -280
+	ld.d $t5, $t0, 0
 # %op63 = getelementptr i32, i32* %op62, i32 %op59
-	ld.w $t8, $fp, -264
 	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
-	ld.d $t8, $fp, -280
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -288
+	mul.w $t7, $t6, $t7
+	add.d $t5, $t5, $t7
 # br label %label65
 	b .transpose_label65
 .transpose_label64:
@@ -475,17 +338,13 @@ transpose:
 .transpose_label65:
 # store i32 %op36, i32* %op63
 	ld.w $t7, $fp, -188
-	ld.d $t8, $fp, -288
-	st.w $t7, $t8, 0
+	st.w $t7, $t5, 0
 # %op66 = add i32 %op17, 1
-	ld.w $t7, $fp, -120
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -292
+	add.w $t4, $t4, $t8
 # br label %label29
 # %op30 = phi i32 [ %op23, %label22 ], [ %op66, %label65 ]
-	ld.w $t7, $fp, -292
-	add.d $t7, $t7, $zero
+	add.d $t7, $t4, $zero
 	st.w $t7, $fp, -156
 	b .transpose_label29
 transpose_exit:
@@ -506,70 +365,56 @@ main:
 	st.w $a0, $fp, -20
 # %op1 = call i32 @input()
 	bl input
-	st.w $a0, $fp, -24
+	add.w $t0, $a0, $zero
 # store i32 %op1, i32* @len
-	ld.w $t7, $fp, -24
-	la.local $t8, len
-	st.w $t7, $t8, 0
+	la.local $t7, len
+	st.w $t0, $t7, 0
 # call void @readarray()
 	bl readarray
 # %op2 = icmp slt i32 0, %op0
 	addi.w $t7, $zero, 0
 	ld.w $t8, $fp, -20
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -25
+	slt $t0, $t7, $t8
 # br i1 %op2, label %label3, label %label6
+	st.b $t0, $fp, -25
 # %op4 = phi i32 [ 0, %label_entry ], [ %op13, %label12 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -32
+	add.d $t0, $t7, $zero
 	ld.b $t7, $fp, -25
 	bnez $t7, .main_label3
 	b .main_label6
 .main_label3:
 # %op4 = phi i32 [ 0, %label_entry ], [ %op13, %label12 ]
 # %op5 = icmp sge i32 %op4, 0
-	ld.w $t7, $fp, -32
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -33
-	ld.w $t7, $fp, -32
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t0
+	xor $t8, $t8, $t0
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -33
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -33
+	or $t1, $t7, $t8
 # br i1 %op5, label %label9, label %label11
-	ld.b $t7, $fp, -33
-	bnez $t7, .main_label9
+	bnez $t1, .main_label9
 	b .main_label11
 .main_label6:
 # %op7 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -40
+	ld.w $t0, $t8, 0
 # %op8 = icmp slt i32 0, %op7
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -40
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -41
+	addi.w $t8, $zero, 0
+	slt $t0, $t8, $t0
 # br i1 %op8, label %label15, label %label19
 # %op16 = phi i32 [ 0, %label6 ], [ %op28, %label26 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -68
-	ld.b $t7, $fp, -41
-	bnez $t7, .main_label15
+	bnez $t0, .main_label15
 	b .main_label19
 .main_label9:
 # %op10 = getelementptr [20000000 x i32], [20000000 x i32]* @matrix, i32 0, i32 %op4
-	ld.w $t8, $fp, -32
-	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
 	la.local $t8, matrix
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -56
+	addi.w $t7, $zero, 4
+	mul.w $t7, $t0, $t7
+	add.d $t1, $t8, $t7
 # br label %label12
 	b .main_label12
 .main_label11:
@@ -579,26 +424,17 @@ main:
 	b .main_label12
 .main_label12:
 # store i32 %op4, i32* %op10
-	ld.w $t7, $fp, -32
-	ld.d $t8, $fp, -56
-	st.w $t7, $t8, 0
+	st.w $t0, $t1, 0
 # %op13 = add i32 %op4, 1
-	ld.w $t7, $fp, -32
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -60
+	add.w $t0, $t0, $t8
 # %op14 = icmp slt i32 %op13, %op0
-	ld.w $t7, $fp, -60
 	ld.w $t8, $fp, -20
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -61
+	slt $t2, $t0, $t8
 # br i1 %op14, label %label3, label %label6
 # %op4 = phi i32 [ 0, %label_entry ], [ %op13, %label12 ]
-	ld.w $t7, $fp, -60
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -32
-	ld.b $t7, $fp, -61
-	bnez $t7, .main_label3
+	add.d $t0, $t0, $zero
+	bnez $t2, .main_label3
 	b .main_label6
 .main_label15:
 # %op16 = phi i32 [ 0, %label6 ], [ %op28, %label26 ]
@@ -607,49 +443,35 @@ main:
 	addi.w $t7, $zero, 4
 	mul.w $t7, $t8, $t7
 	la.local $t8, matrix
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -80
+	add.d $t1, $t8, $t7
 # %op18 = icmp sge i32 %op16, 0
 	ld.w $t7, $fp, -68
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -81
-	ld.w $t7, $fp, -68
+	slt $t2, $t8, $t7
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -81
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -81
+	or $t2, $t2, $t8
 # br i1 %op18, label %label22, label %label25
-	ld.b $t7, $fp, -81
-	bnez $t7, .main_label22
+	bnez $t2, .main_label22
 	b .main_label25
 .main_label19:
 # %op20 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -88
+	ld.w $t0, $t8, 0
 # %op21 = icmp slt i32 0, %op20
-	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -88
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -89
+	addi.w $t8, $zero, 0
+	slt $t0, $t8, $t0
 # br i1 %op21, label %label31, label %label35
+	st.b $t0, $fp, -89
 # %op33 = phi i32 [ 0, %label19 ], [ %op46, %label42 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -132
+	add.d $t1, $t7, $zero
 # %op32 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
 	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -128
+	add.d $t0, $t7, $zero
 	ld.b $t7, $fp, -89
 	bnez $t7, .main_label31
-# %op36 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
-	addi.w $t7, $zero, 0
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -140
 	b .main_label35
 .main_label22:
 # %op23 = getelementptr [100000 x i32], [100000 x i32]* @ad, i32 0, i32 %op16
@@ -657,11 +479,9 @@ main:
 	addi.w $t7, $zero, 4
 	mul.w $t7, $t8, $t7
 	la.local $t8, ad
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -104
+	add.d $t2, $t8, $t7
 # %op24 = load i32, i32* %op23
-	ld.d $t8, $fp, -104
-	ld.w $t7, $t8, 0
+	ld.w $t7, $t2, 0
 	st.w $t7, $fp, -108
 # br label %label26
 	b .main_label26
@@ -673,78 +493,56 @@ main:
 .main_label26:
 # %op27 = call i32 @transpose(i32 %op0, i32* %op17, i32 %op24)
 	ld.w $a0, $fp, -20
-	ld.d $a1, $fp, -80
+	add.d $a1, $t1, $zero
 	ld.w $a2, $fp, -108
 	bl transpose
-	st.w $a0, $fp, -112
+	add.w $t0, $a0, $zero
 # %op28 = add i32 %op16, 1
 	ld.w $t7, $fp, -68
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -116
+	add.w $t0, $t7, $t8
 # %op29 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -120
+	ld.w $t1, $t8, 0
 # %op30 = icmp slt i32 %op28, %op29
-	ld.w $t7, $fp, -116
-	ld.w $t8, $fp, -120
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -121
+	slt $t1, $t0, $t1
 # br i1 %op30, label %label15, label %label19
 # %op16 = phi i32 [ 0, %label6 ], [ %op28, %label26 ]
-	ld.w $t7, $fp, -116
-	add.d $t7, $t7, $zero
+	add.d $t7, $t0, $zero
 	st.w $t7, $fp, -68
-	ld.b $t7, $fp, -121
-	bnez $t7, .main_label15
+	bnez $t1, .main_label15
 	b .main_label19
 .main_label31:
 # %op32 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
 # %op33 = phi i32 [ 0, %label19 ], [ %op46, %label42 ]
 # %op34 = icmp sge i32 %op33, 0
-	ld.w $t7, $fp, -132
 	addi.w $t8, $zero, 0
-	slt $t7, $t8, $t7
-	st.b $t7, $fp, -133
-	ld.w $t7, $fp, -132
-	xor $t8, $t8, $t7
+	slt $t7, $t8, $t1
+	xor $t8, $t8, $t1
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	ld.b $t7, $fp, -133
-	or $t7, $t7, $t8
-	st.b $t7, $fp, -133
+	or $t2, $t7, $t8
 # br i1 %op34, label %label38, label %label41
-	ld.b $t7, $fp, -133
-	bnez $t7, .main_label38
+	bnez $t2, .main_label38
 	b .main_label41
 .main_label35:
 # %op36 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
 # %op37 = icmp slt i32 %op36, 0
-	ld.w $t7, $fp, -140
 	addi.w $t8, $zero, 0
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -141
+	slt $t1, $t0, $t8
 # br i1 %op37, label %label49, label %label51
-	ld.b $t7, $fp, -141
-	bnez $t7, .main_label49
+	bnez $t1, .main_label49
 # %op52 = phi i32 [ %op36, %label35 ], [ %op50, %label49 ]
-	ld.w $t7, $fp, -140
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -188
+	add.d $t0, $t0, $zero
 	b .main_label51
 .main_label38:
 # %op39 = getelementptr [20000000 x i32], [20000000 x i32]* @matrix, i32 0, i32 %op33
-	ld.w $t8, $fp, -132
-	addi.w $t7, $zero, 4
-	mul.w $t7, $t8, $t7
 	la.local $t8, matrix
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -152
+	addi.w $t7, $zero, 4
+	mul.w $t7, $t1, $t7
+	add.d $t2, $t8, $t7
 # %op40 = load i32, i32* %op39
-	ld.d $t8, $fp, -152
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -156
+	ld.w $t2, $t2, 0
 # br label %label42
 	b .main_label42
 .main_label41:
@@ -754,66 +552,38 @@ main:
 	b .main_label42
 .main_label42:
 # %op43 = mul i32 %op33, %op33
-	ld.w $t7, $fp, -132
-	ld.w $t8, $fp, -132
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -160
+	mul.w $t3, $t1, $t1
 # %op44 = mul i32 %op43, %op40
-	ld.w $t7, $fp, -160
-	ld.w $t8, $fp, -156
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -164
+	mul.w $t3, $t3, $t2
 # %op45 = add i32 %op32, %op44
-	ld.w $t7, $fp, -128
-	ld.w $t8, $fp, -164
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -168
+	add.w $t0, $t0, $t3
 # %op46 = add i32 %op33, 1
-	ld.w $t7, $fp, -132
 	addi.w $t8, $zero, 1
-	add.w $t7, $t7, $t8
-	st.w $t7, $fp, -172
+	add.w $t1, $t1, $t8
 # %op47 = load i32, i32* @len
 	la.local $t8, len
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -176
+	ld.w $t3, $t8, 0
 # %op48 = icmp slt i32 %op46, %op47
-	ld.w $t7, $fp, -172
-	ld.w $t8, $fp, -176
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -177
+	slt $t3, $t1, $t3
 # br i1 %op48, label %label31, label %label35
 # %op32 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
-	ld.w $t7, $fp, -168
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -128
+	add.d $t0, $t0, $zero
 # %op33 = phi i32 [ 0, %label19 ], [ %op46, %label42 ]
-	ld.w $t7, $fp, -172
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -132
-	ld.b $t7, $fp, -177
-	bnez $t7, .main_label31
-# %op36 = phi i32 [ 0, %label19 ], [ %op45, %label42 ]
-	ld.w $t7, $fp, -168
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -140
+	add.d $t1, $t1, $zero
+	bnez $t3, .main_label31
 	b .main_label35
 .main_label49:
 # %op50 = sub i32 0, %op36
 	addi.w $t7, $zero, 0
-	ld.w $t8, $fp, -140
-	sub.w $t7, $t7, $t8
-	st.w $t7, $fp, -184
+	sub.w $t1, $t7, $t0
 # br label %label51
 # %op52 = phi i32 [ %op36, %label35 ], [ %op50, %label49 ]
-	ld.w $t7, $fp, -184
-	add.d $t7, $t7, $zero
-	st.w $t7, $fp, -188
+	add.d $t0, $t1, $zero
 	b .main_label51
 .main_label51:
 # %op52 = phi i32 [ %op36, %label35 ], [ %op50, %label49 ]
 # call void @output(i32 %op52)
-	ld.w $a0, $fp, -188
+	add.d $a0, $t0, $zero
 	bl output
 # ret i32 0
 	addi.w $a0, $zero, 0

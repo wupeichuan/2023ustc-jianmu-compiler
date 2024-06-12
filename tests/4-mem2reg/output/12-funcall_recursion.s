@@ -6,30 +6,25 @@ factorial:
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -64
-	st.w $a0, $fp, -20
+	add.d $t0, $a0, $zero
 .factorial_label_entry:
 # %op1 = alloca i32
 	addi.d $t8, $fp, -36
 	addi.d $t7, $fp, -32
 	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op1
-	ld.w $t7, $fp, -20
-	ld.d $t8, $fp, -32
-	st.w $t7, $t8, 0
+	ld.d $t7, $fp, -32
+	st.w $t0, $t7, 0
 # %op2 = load i32, i32* %op1
 	ld.d $t8, $fp, -32
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -40
+	ld.w $t0, $t8, 0
 # %op3 = icmp eq i32 %op2, 0
-	ld.w $t7, $fp, -40
 	addi.w $t8, $zero, 0
-	xor $t7, $t7, $t8
+	xor $t7, $t0, $t8
 	sltu $t7, $zero, $t7
-	xori $t7, $t7, 1
-	st.b $t7, $fp, -41
+	xori $t0, $t7, 1
 # br i1 %op3, label %label4, label %label5
-	ld.b $t7, $fp, -41
-	bnez $t7, .factorial_label4
+	bnez $t0, .factorial_label4
 	b .factorial_label5
 .factorial_label4:
 # ret i32 1
@@ -38,28 +33,21 @@ factorial:
 .factorial_label5:
 # %op6 = load i32, i32* %op1
 	ld.d $t8, $fp, -32
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -48
+	ld.w $t0, $t8, 0
 # %op7 = sub i32 %op6, 1
-	ld.w $t7, $fp, -48
 	addi.w $t8, $zero, 1
-	sub.w $t7, $t7, $t8
-	st.w $t7, $fp, -52
+	sub.w $t0, $t0, $t8
 # %op8 = call i32 @factorial(i32 %op7)
-	ld.w $a0, $fp, -52
+	add.d $a0, $t0, $zero
 	bl factorial
-	st.w $a0, $fp, -56
+	add.w $t0, $a0, $zero
 # %op9 = load i32, i32* %op1
 	ld.d $t8, $fp, -32
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -60
+	ld.w $t1, $t8, 0
 # %op10 = mul i32 %op9, %op8
-	ld.w $t7, $fp, -60
-	ld.w $t8, $fp, -56
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -64
+	mul.w $t0, $t1, $t0
 # ret i32 %op10
-	ld.w $a0, $fp, -64
+	add.w $a0, $t0, $zero
 	b factorial_exit
 .factorial_label11:
 # ret i32 0
@@ -81,9 +69,9 @@ main:
 # %op0 = call i32 @factorial(i32 10)
 	addi.w $a0, $zero, 10
 	bl factorial
-	st.w $a0, $fp, -20
+	add.w $t0, $a0, $zero
 # ret i32 %op0
-	ld.w $a0, $fp, -20
+	add.w $a0, $t0, $zero
 	b main_exit
 main_exit:
 	addi.d $sp, $sp, 32

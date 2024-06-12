@@ -11,11 +11,9 @@ main:
 	addi.w $t7, $zero, 2
 	addi.w $t8, $zero, 0
 	xor $t7, $t7, $t8
-	sltu $t7, $zero, $t7
-	st.b $t7, $fp, -17
+	sltu $t0, $zero, $t7
 # br i1 %op0, label %label1, label %label2
-	ld.b $t7, $fp, -17
-	bnez $t7, .main_label1
+	bnez $t0, .main_label1
 	b .main_label2
 .main_label1:
 # br label %label2

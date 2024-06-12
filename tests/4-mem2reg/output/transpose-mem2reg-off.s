@@ -60,6 +60,7 @@ readarray:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -45
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -44
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -350,6 +351,7 @@ transpose:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -249
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -248
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -434,6 +436,7 @@ transpose:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -305
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -304
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -492,6 +495,7 @@ transpose:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -349
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -348
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -558,6 +562,7 @@ transpose:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -393
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -392
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -684,6 +689,7 @@ main:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -85
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -84
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -792,6 +798,7 @@ main:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -157
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -156
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
@@ -895,6 +902,7 @@ main:
 	addi.w $t8, $zero, 0
 	slt $t7, $t8, $t7
 	st.b $t7, $fp, -217
+	addi.w $t8, $zero, 0
 	ld.w $t7, $fp, -216
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
