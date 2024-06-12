@@ -684,7 +684,7 @@ void CodeGen::gen_float_binary() {
             }
             store_from_freg(context.inst, FReg::ft(14));
         }
-        else if(m->get_handle(context.inst->get_operand(0))==-1&&m->get_handle(context.inst->get_operand(1))!=-1){
+        else if(m->get_handle(context.inst->get_operand(0))!=-1&&m->get_handle(context.inst->get_operand(1))==-1){
             load_to_freg(context.inst->get_operand(1), FReg::ft(14));
             switch (context.inst->get_instr_type()){
             case Instruction::fadd:
@@ -1324,6 +1324,7 @@ void CodeGen::gen_icmp() {
                     Reg::t(8).print(),
                     Reg::t(7).print()});
                 store_from_greg(context.inst,Reg::t(7));
+                load_to_greg(context.inst->get_operand(1), Reg::t(8));
                 load_to_greg(context.inst->get_operand(0),Reg::t(7));
                 append_inst("xor",{Reg::t(8).print(),
                     Reg::t(8).print(),
@@ -1348,6 +1349,7 @@ void CodeGen::gen_icmp() {
                     Reg::t(7).print(),
                     Reg::t(8).print()});
                 store_from_greg(context.inst,Reg::t(7));
+                load_to_greg(context.inst->get_operand(1), Reg::t(8));
                 load_to_greg(context.inst->get_operand(0),Reg::t(7));
                 append_inst("xor",{Reg::t(8).print(),
                     Reg::t(8).print(),
@@ -1405,7 +1407,7 @@ void CodeGen::gen_fcmp() {
         reg0 = 14;
         reg1 = m->get_handle(context.inst->get_operand(1));
     }
-    else if(m->get_handle(context.inst->get_operand(0))==-1&&m->get_handle(context.inst->get_operand(1))!=-1){
+    else if(m->get_handle(context.inst->get_operand(0))!=-1&&m->get_handle(context.inst->get_operand(1))==-1){
         load_to_freg(context.inst->get_operand(1), FReg::ft(15));
         reg0 = m->get_handle(context.inst->get_operand(0));
         reg1 = 15;
@@ -1418,7 +1420,7 @@ void CodeGen::gen_fcmp() {
     }
     switch (context.inst->get_instr_type()) {
     case Instruction::fge:
-        append_inst("fcmp.sle.s",{"$fcc0",FReg::ft(reg0).print(),FReg::ft(reg1).print()});
+        append_inst("fcmp.sle.s",{"$fcc0",FReg::ft(reg1).print(),FReg::ft(reg0).print()});
         if(m->get_handle(context.inst)!=-1){
             append_inst("bcnez $fcc0, 8");
             append_inst("b 12");
@@ -1545,7 +1547,7 @@ void CodeGen::gen_fcmp() {
 
 void CodeGen::gen_zext() {
     // TODO 将窄位宽的整数数据进行零扩展
-    if(m->get_handle(context.inst)!=1){
+    if(m->get_handle(context.inst)!=-1){
         if(m->get_handle(context.inst->get_operand(0))!=-1){
             append_inst("add.w",{Reg::t(m->get_handle(context.inst)).print(),
                 Reg::t(m->get_handle(context.inst->get_operand(0))).print(),"$zero"});

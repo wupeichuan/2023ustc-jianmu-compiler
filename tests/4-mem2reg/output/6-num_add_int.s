@@ -10,9 +10,10 @@ main:
 # %op0 = add i32 1000, 234
 	addi.w $t7, $zero, 1000
 	addi.w $t8, $zero, 234
-	add.w $t0, $t7, $t8
+	add.w $t7, $t7, $t8
+	st.w $t7, $fp, -20
 # ret i32 %op0
-	add.w $a0, $t0, $zero
+	ld.w $a0, $fp, -20
 	b main_exit
 main_exit:
 	addi.d $sp, $sp, 32

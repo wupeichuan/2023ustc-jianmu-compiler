@@ -63,25 +63,25 @@ main:
 	addi.w $a0, $zero, 11
 	addi.w $a1, $zero, 22
 	bl min
-	st.w $a0, $fp, -20
+	add.w $t0, $a0, $zero
 # call void @output(i32 %op0)
-	ld.w $a0, $fp, -20
+	add.d $a0, $t0, $zero
 	bl output
 # %op1 = call i32 @min(i32 22, i32 33)
 	addi.w $a0, $zero, 22
 	addi.w $a1, $zero, 33
 	bl min
-	st.w $a0, $fp, -24
+	add.w $t0, $a0, $zero
 # call void @output(i32 %op1)
-	ld.w $a0, $fp, -24
+	add.d $a0, $t0, $zero
 	bl output
 # %op2 = call i32 @min(i32 33, i32 11)
 	addi.w $a0, $zero, 33
 	addi.w $a1, $zero, 11
 	bl min
-	st.w $a0, $fp, -28
+	add.w $t0, $a0, $zero
 # call void @output(i32 %op2)
-	ld.w $a0, $fp, -28
+	add.d $a0, $t0, $zero
 	bl output
 # ret i32 0
 	addi.w $a0, $zero, 0

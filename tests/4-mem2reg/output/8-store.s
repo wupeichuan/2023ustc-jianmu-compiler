@@ -85,15 +85,13 @@ main:
 # %op1 = icmp slt i32 0, 10
 	addi.w $t7, $zero, 0
 	addi.w $t8, $zero, 10
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -65
+	slt $t1, $t7, $t8
 # br i1 %op1, label %label2, label %label9
 # %op3 = phi i32 [ 0, %label_entry ], [ %op7, %label2 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -72
-	ld.b $t7, $fp, -65
-	bnez $t7, .main_label2
+	bnez $t1, .main_label2
 	b .main_label9
 .main_label2:
 # %op3 = phi i32 [ 0, %label_entry ], [ %op7, %label2 ]
@@ -102,17 +100,15 @@ main:
 	addi.w $t7, $zero, 4
 	mul.w $t7, $t8, $t7
 	ld.d $t8, $fp, -24
-	add.d $t7, $t8, $t7
-	st.d $t7, $fp, -80
+	add.d $t2, $t8, $t7
 # %op5 = mul i32 %op3, 2
 	ld.w $t7, $fp, -72
 	addi.w $t8, $zero, 2
-	mul.w $t7, $t7, $t8
-	st.w $t7, $fp, -84
+	mul.w $t3, $t7, $t8
 # %op6 = call i32 @store(i32* %op4, i32 %op3, i32 %op5)
-	ld.d $a0, $fp, -80
+	add.d $a0, $t2, $zero
 	ld.w $a1, $fp, -72
-	ld.w $a2, $fp, -84
+	add.d $a2, $t3, $zero
 	bl store
 	add.w $t0, $a0, $zero
 # %op7 = add i32 %op3, 1

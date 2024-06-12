@@ -14,13 +14,18 @@ main:
 # %op1 = icmp sge i32 3, 0
 	addi.w $t7, $zero, 3
 	addi.w $t8, $zero, 0
-	slt $t1, $t8, $t7
+	slt $t7, $t8, $t7
+	st.b $t7, $fp, -65
+	addi.w $t7, $zero, 3
 	xor $t8, $t8, $t7
 	sltu $t8, $zero, $t8
 	xori $t8, $t8, 1
-	or $t1, $t1, $t8
+	ld.b $t7, $fp, -65
+	or $t7, $t7, $t8
+	st.b $t7, $fp, -65
 # br i1 %op1, label %label2, label %label4
-	bnez $t1, .main_label2
+	ld.b $t7, $fp, -65
+	bnez $t7, .main_label2
 	b .main_label4
 .main_label2:
 # %op3 = getelementptr [10 x i32], [10 x i32]* %op0, i32 0, i32 3

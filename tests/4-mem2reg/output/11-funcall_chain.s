@@ -6,19 +6,27 @@ addone:
 	st.d $fp, $sp, -16
 	addi.d $fp, $sp, 0
 	addi.d $sp, $sp, -48
-	add.d $t0, $a0, $zero
+	st.w $a0, $fp, -20
 .addone_label_entry:
 # %op1 = alloca i32
-	addi.d $t1, $fp, -36
+	addi.d $t8, $fp, -36
+	addi.d $t7, $fp, -32
+	st.d $t8, $t7, 0
 # store i32 %arg0, i32* %op1
-	st.w $t0, $t1, 0
+	ld.w $t7, $fp, -20
+	ld.d $t8, $fp, -32
+	st.w $t7, $t8, 0
 # %op2 = load i32, i32* %op1
-	ld.w $t0, $t1, 0
+	ld.d $t8, $fp, -32
+	ld.w $t7, $t8, 0
+	st.w $t7, $fp, -40
 # %op3 = add i32 %op2, 1
+	ld.w $t7, $fp, -40
 	addi.w $t8, $zero, 1
-	add.w $t0, $t0, $t8
+	add.w $t7, $t7, $t8
+	st.w $t7, $fp, -44
 # ret i32 %op3
-	add.w $a0, $t0, $zero
+	ld.w $a0, $fp, -44
 	b addone_exit
 addone_exit:
 	addi.d $sp, $sp, 48
@@ -48,9 +56,9 @@ main:
 # %op3 = call i32 @addone(i32 %op2)
 	ld.w $a0, $fp, -28
 	bl addone
-	add.w $t0, $a0, $zero
+	st.w $a0, $fp, -32
 # ret i32 %op3
-	add.w $a0, $t0, $zero
+	ld.w $a0, $fp, -32
 	b main_exit
 main_exit:
 	addi.d $sp, $sp, 32

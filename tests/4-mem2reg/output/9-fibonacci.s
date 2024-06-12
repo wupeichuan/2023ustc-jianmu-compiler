@@ -63,15 +63,12 @@ fibonacci:
 	st.w $a0, $fp, -64
 # %op14 = load i32, i32* %op1
 	ld.d $t8, $fp, -32
-	ld.w $t7, $t8, 0
-	st.w $t7, $fp, -68
+	ld.w $t1, $t8, 0
 # %op15 = sub i32 %op14, 1
-	ld.w $t7, $fp, -68
 	addi.w $t8, $zero, 1
-	sub.w $t7, $t7, $t8
-	st.w $t7, $fp, -72
+	sub.w $t1, $t1, $t8
 # %op16 = call i32 @fibonacci(i32 %op15)
-	ld.w $a0, $fp, -72
+	add.d $a0, $t1, $zero
 	bl fibonacci
 	add.w $t0, $a0, $zero
 # %op17 = add i32 %op16, %op13
@@ -99,15 +96,13 @@ main:
 # %op0 = icmp slt i32 0, 10
 	addi.w $t7, $zero, 0
 	addi.w $t8, $zero, 10
-	slt $t7, $t7, $t8
-	st.b $t7, $fp, -17
+	slt $t0, $t7, $t8
 # br i1 %op0, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]
 	addi.w $t7, $zero, 0
 	add.d $t7, $t7, $zero
 	st.w $t7, $fp, -24
-	ld.b $t7, $fp, -17
-	bnez $t7, .main_label1
+	bnez $t0, .main_label1
 	b .main_label6
 .main_label1:
 # %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]

@@ -8,8 +8,8 @@
 // #define INT_REG (8-2)
 // #define FP_REG (15-2)
 
-#define INT_REG 6
-#define FP_REG 13
+#define INT_REG -1
+#define FP_REG -1
 
 class RegAlloca : public Pass
 {
@@ -37,5 +37,4 @@ private:
     std::set<int> free_freg;
     std::map<Value*,struct time> interval_;
     std::unique_ptr<ActiveVar> activevar_;
-    Value* ffun;
 };

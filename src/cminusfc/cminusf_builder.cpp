@@ -295,7 +295,8 @@ Value* CminusfBuilder::visit(ASTVar &node) {
         builder->create_br(brBB);
         builder->set_insert_point(errorBB);
         auto func = scope.find("neg_idx_except");
-        builder->create_call(func,{});
+        auto call = builder->create_call(func,{});
+        call->set_name("neg_idx_except");
         builder->create_br(brBB);
         builder->set_insert_point(brBB);
         if(flag == 0)

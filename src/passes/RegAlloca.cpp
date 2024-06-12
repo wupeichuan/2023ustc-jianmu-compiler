@@ -108,10 +108,7 @@ void RegAlloca::live_interval(Function *f){
             }
             else if(ir->is_call()){
                 for(auto val : ir->get_operands()){
-                    if(val->get_type()->is_function_type()){
-                        add_range(val,-1,inst_id[ir]+1);
-                        add_range(val,inst_id[ir],-1);
-                    }
+                    if(val->get_type()->is_function_type()) continue;
                     else if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
                         &&!dynamic_cast<GlobalVariable *>(val)){
                         add_range(val,-1,inst_id[ir]);
@@ -119,6 +116,10 @@ void RegAlloca::live_interval(Function *f){
                 }
                 if(!ir->is_void()&&!dynamic_cast<GlobalVariable *>(ir)){
                     add_range(ir,inst_id[ir]+1,-1);
+                }
+                else if(ir->is_void()){
+                    if(ir->get_name()!="neg_idx_except")
+                        add_range(ir,inst_id[ir]+1,inst_id[ir]+2);
                 }
             }
             else if(ir->is_ret()){
@@ -178,9 +179,9 @@ void RegAlloca::alloca_reg(Function* f){
     build_unhandle(f);
     for(auto iter=unhandle_.begin();iter!=unhandle_.end();iter++){
         auto val=*iter;
+        auto inst=dynamic_cast<Instruction*>(val);
         expire_old(val);
-        if(val->get_type()->is_function_type()){
-            ffun = val;
+        if(inst&&inst->is_call()){
             for(auto iiter=ractive_.begin();iiter!=ractive_.end();iiter++){
                 auto temp = *iiter;
                 handle_.erase(temp);
@@ -194,29 +195,7 @@ void RegAlloca::alloca_reg(Function* f){
             for(int i=0;i<=INT_REG;i++) free_greg.insert(i);
             for(int i=0;i<=FP_REG;i++) free_freg.insert(i);
         }
-        // because all the function call of a same function cannot be distinguish,
-        // we have to simply merge the range these function call 
-        else if(get_start(val)<get_end(ffun)) continue; 
-        else if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
-            if(free_greg.size()==0){
-                spill(val);
-            }
-            else{
-                handle_[val]=*(free_greg.begin());
-                free_greg.erase(free_greg.begin());
-                auto iiter = ractive_.begin();
-                for(;iiter!=ractive_.end();iiter++){
-                    if(get_end(val)<get_end(*iiter)){
-                        ractive_.insert(iiter,val);
-                        break;
-                    }
-                }
-                if(iiter==ractive_.end()){
-                    ractive_.insert(ractive_.end(),val);
-                }
-            }
-        }
-        else{
+        if(val->get_type()->is_float_type()){
             if(free_freg.size()==0){
                 spill(val);
             }
@@ -232,6 +211,25 @@ void RegAlloca::alloca_reg(Function* f){
                 }
                 if(iiter==factive_.end()){
                     factive_.insert(factive_.end(),val);
+                }
+            }
+        }
+        else{
+            if(free_greg.size()==0){
+                spill(val);
+            }
+            else{
+                handle_[val]=*(free_greg.begin());
+                free_greg.erase(free_greg.begin());
+                auto iiter = ractive_.begin();
+                for(;iiter!=ractive_.end();iiter++){
+                    if(get_end(val)<get_end(*iiter)){
+                        ractive_.insert(iiter,val);
+                        break;
+                    }
+                }
+                if(iiter==ractive_.end()){
+                    ractive_.insert(ractive_.end(),val);
                 }
             }
         }
@@ -258,7 +256,8 @@ void RegAlloca::build_unhandle(Function* f){
     }
 }
 void RegAlloca::expire_old(Value* val){
-    if(val->get_type()->is_function_type()){
+    auto inst = dynamic_cast<Instruction*>(val);
+    if(inst&&inst->is_call()){
         auto iiter=ractive_.begin();
         while(iiter!=ractive_.end()){
             auto vval=*iiter;
@@ -280,19 +279,7 @@ void RegAlloca::expire_old(Value* val){
             iiter2=factive_.begin();
         }
     }
-    else if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
-        auto iiter2=ractive_.begin();
-        while(iiter2!=ractive_.end()){
-            auto vval=*iiter2;
-            if(get_end(vval)>get_start(val)){
-                return;
-            }
-            ractive_.erase(iiter2);
-            free_greg.insert(handle_[vval]);
-            iiter2=ractive_.begin();
-        }
-    }
-    else{
+    else if(val->get_type()->is_float_type()){
         auto iiter2=factive_.begin();
         while(iiter2!=factive_.end()){
             auto vval=*iiter2;
@@ -302,6 +289,18 @@ void RegAlloca::expire_old(Value* val){
             factive_.erase(iiter2);
             free_freg.insert(handle_[vval]);
             iiter2=factive_.begin();
+        }
+    }
+    else{
+        auto iiter2=ractive_.begin();
+        while(iiter2!=ractive_.end()){
+            auto vval=*iiter2;
+            if(get_end(vval)>get_start(val)){
+                return;
+            }
+            ractive_.erase(iiter2);
+            free_greg.insert(handle_[vval]);
+            iiter2=ractive_.begin();
         }
     }
 }

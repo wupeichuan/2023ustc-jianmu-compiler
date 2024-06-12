@@ -1,7 +1,6 @@
 ; ModuleID = 'cminus'
 source_filename = "/home/hzw/桌面/2023ustc-jianmu-compiler/my_test/test.cminus"
 
-@x = global [10 x float] zeroinitializer
 declare i32 @input()
 
 declare void @output(i32)
@@ -10,202 +9,115 @@ declare void @outputFloat(float)
 
 declare void @neg_idx_except()
 
-define i32 @minloc(float* %arg0, float %arg1, i32 %arg2) {
+define i32 @mod(i32 %arg0, i32 %arg1) {
 label_entry:
-  %op3 = alloca float*
-  store float* %arg0, float** %op3
-  %op4 = alloca float
-  store float %arg1, float* %op4
-  %op5 = alloca i32
-  store i32 %arg2, i32* %op5
-  %op6 = load float, float* %op4
-  %op7 = fptosi float %op6 to i32
-  %op8 = load float, float* %op4
-  %op9 = fptosi float %op8 to i32
-  %op10 = icmp sge i32 %op9, 0
-  br i1 %op10, label %label11, label %label15
-label11:                                                ; preds = %label_entry
-  %op12 = load float*, float** %op3
-  %op13 = getelementptr float, float* %op12, i32 %op9
-  %op14 = load float, float* %op13
-  br label %label16
-label15:                                                ; preds = %label_entry
-  call void @neg_idx_except()
-  br label %label16
-label16:                                                ; preds = %label11, %label15
-  %op17 = fptosi float %op14 to i32
-  %op18 = load float, float* %op4
-  %op19 = sitofp i32 1 to float
-  %op20 = fadd float %op18, %op19
-  %op21 = fptosi float %op20 to i32
-  %op22 = load i32, i32* %op5
-  %op23 = icmp slt i32 %op21, %op22
-  br i1 %op23, label %label24, label %label29
-label24:                                                ; preds = %label16, %label41
-  %op25 = phi i32 [ %op7, %label16 ], [ %op42, %label41 ]
-  %op26 = phi i32 [ %op17, %label16 ], [ %op43, %label41 ]
-  %op27 = phi i32 [ %op21, %label16 ], [ %op44, %label41 ]
-  %op28 = icmp sge i32 %op27, 0
-  br i1 %op28, label %label31, label %label35
-label29:                                                ; preds = %label16, %label41
-  %op30 = phi i32 [ %op7, %label16 ], [ %op42, %label41 ]
-  ret i32 %op30
-label31:                                                ; preds = %label24
-  %op32 = load float*, float** %op3
-  %op33 = getelementptr float, float* %op32, i32 %op27
-  %op34 = load float, float* %op33
-  br label %label36
-label35:                                                ; preds = %label24
-  call void @neg_idx_except()
-  br label %label36
-label36:                                                ; preds = %label31, %label35
-  %op37 = sitofp i32 %op26 to float
-  %op38 = fcmp ult float %op34, %op37
-  br i1 %op38, label %label39, label %label41
-label39:                                                ; preds = %label36
-  %op40 = icmp sge i32 %op27, 0
-  br i1 %op40, label %label47, label %label51
-label41:                                                ; preds = %label36, %label52
-  %op42 = phi i32 [ %op25, %label36 ], [ %op27, %label52 ]
-  %op43 = phi i32 [ %op26, %label36 ], [ %op53, %label52 ]
-  %op44 = add i32 %op27, 1
-  %op45 = load i32, i32* %op5
-  %op46 = icmp slt i32 %op44, %op45
-  br i1 %op46, label %label24, label %label29
-label47:                                                ; preds = %label39
-  %op48 = load float*, float** %op3
-  %op49 = getelementptr float, float* %op48, i32 %op27
-  %op50 = load float, float* %op49
-  br label %label52
-label51:                                                ; preds = %label39
-  call void @neg_idx_except()
-  br label %label52
-label52:                                                ; preds = %label47, %label51
-  %op53 = fptosi float %op50 to i32
-  br label %label41
+  %op2 = alloca i32
+  store i32 %arg0, i32* %op2
+  %op3 = alloca i32
+  store i32 %arg1, i32* %op3
+  %op4 = load i32, i32* %op3
+  %op5 = load i32, i32* %op3
+  %op6 = load i32, i32* %op2
+  %op7 = sdiv i32 %op6, %op5
+  %op8 = mul i32 %op7, %op4
+  %op9 = load i32, i32* %op2
+  %op10 = sub i32 %op9, %op8
+  ret i32 %op10
 }
-define void @sort(float* %arg0, i32 %arg1, float %arg2) {
+define void @printfour(i32 %arg0) {
 label_entry:
-  %op3 = alloca float*
-  store float* %arg0, float** %op3
-  %op4 = alloca i32
-  store i32 %arg1, i32* %op4
-  %op5 = alloca float
-  store float %arg2, float* %op5
-  %op6 = load i32, i32* %op4
-  %op7 = load float, float* %op5
-  %op8 = sitofp i32 1 to float
-  %op9 = fsub float %op7, %op8
-  %op10 = sitofp i32 %op6 to float
-  %op11 = fcmp ult float %op10, %op9
-  br i1 %op11, label %label12, label %label20
-label12:                                                ; preds = %label_entry, %label46
-  %op13 = phi i32 [ %op6, %label_entry ], [ %op48, %label46 ]
-  %op14 = load float*, float** %op3
-  %op15 = sitofp i32 %op13 to float
-  %op16 = load float, float* %op5
-  %op17 = fptosi float %op16 to i32
-  %op18 = call i32 @minloc(float* %op14, float %op15, i32 %op17)
-  %op19 = icmp sge i32 %op18, 0
-  br i1 %op19, label %label21, label %label25
-label20:                                                ; preds = %label_entry, %label46
+  %op1 = alloca i32
+  store i32 %arg0, i32* %op1
+  %op2 = load i32, i32* %op1
+  %op3 = call i32 @mod(i32 %op2, i32 10000)
+  %op4 = call i32 @mod(i32 %op3, i32 10)
+  %op5 = sdiv i32 %op3, 10
+  %op6 = call i32 @mod(i32 %op5, i32 10)
+  %op7 = sdiv i32 %op5, 10
+  %op8 = call i32 @mod(i32 %op7, i32 10)
+  %op9 = sdiv i32 %op7, 10
+  call void @output(i32 %op9)
+  call void @output(i32 %op8)
+  call void @output(i32 %op6)
+  call void @output(i32 %op4)
   ret void
-label21:                                                ; preds = %label12
-  %op22 = load float*, float** %op3
-  %op23 = getelementptr float, float* %op22, i32 %op18
-  %op24 = load float, float* %op23
-  br label %label26
-label25:                                                ; preds = %label12
-  call void @neg_idx_except()
-  br label %label26
-label26:                                                ; preds = %label21, %label25
-  %op27 = fptosi float %op24 to i32
-  %op28 = icmp sge i32 %op18, 0
-  br i1 %op28, label %label29, label %label32
-label29:                                                ; preds = %label26
-  %op30 = load float*, float** %op3
-  %op31 = getelementptr float, float* %op30, i32 %op18
-  br label %label33
-label32:                                                ; preds = %label26
-  call void @neg_idx_except()
-  br label %label33
-label33:                                                ; preds = %label29, %label32
-  %op34 = icmp sge i32 %op13, 0
-  br i1 %op34, label %label35, label %label39
-label35:                                                ; preds = %label33
-  %op36 = load float*, float** %op3
-  %op37 = getelementptr float, float* %op36, i32 %op13
-  %op38 = load float, float* %op37
-  br label %label40
-label39:                                                ; preds = %label33
-  call void @neg_idx_except()
-  br label %label40
-label40:                                                ; preds = %label35, %label39
-  store float %op38, float* %op31
-  %op41 = icmp sge i32 %op13, 0
-  br i1 %op41, label %label42, label %label45
-label42:                                                ; preds = %label40
-  %op43 = load float*, float** %op3
-  %op44 = getelementptr float, float* %op43, i32 %op13
-  br label %label46
-label45:                                                ; preds = %label40
-  call void @neg_idx_except()
-  br label %label46
-label46:                                                ; preds = %label42, %label45
-  %op47 = sitofp i32 %op27 to float
-  store float %op47, float* %op44
-  %op48 = add i32 %op13, 1
-  %op49 = load float, float* %op5
-  %op50 = sitofp i32 1 to float
-  %op51 = fsub float %op49, %op50
-  %op52 = sitofp i32 %op48 to float
-  %op53 = fcmp ult float %op52, %op51
-  br i1 %op53, label %label12, label %label20
 }
 define void @main() {
 label_entry:
-  %op0 = icmp slt i32 0, 10
-  br i1 %op0, label %label1, label %label4
-label1:                                                ; preds = %label_entry, %label11
-  %op2 = phi i32 [ 0, %label_entry ], [ %op14, %label11 ]
-  %op3 = icmp sge i32 %op2, 0
-  br i1 %op3, label %label8, label %label10
-label4:                                                ; preds = %label_entry, %label11
-  %op5 = getelementptr [10 x float], [10 x float]* @x, i32 0, i32 0
-  %op6 = sitofp i32 10 to float
-  call void @sort(float* %op5, i32 0, float %op6)
-  %op7 = icmp slt i32 0, 10
-  br i1 %op7, label %label16, label %label19
-label8:                                                ; preds = %label1
-  %op9 = getelementptr [10 x float], [10 x float]* @x, i32 0, i32 %op2
-  br label %label11
-label10:                                                ; preds = %label1
+  %op0 = alloca [2801 x i32]
+  %op1 = icmp slt i32 0, 2800
+  br i1 %op1, label %label2, label %label5
+label2:                                                ; preds = %label_entry, %label10
+  %op3 = phi i32 [ 0, %label_entry ], [ %op11, %label10 ]
+  %op4 = icmp sge i32 %op3, 0
+  br i1 %op4, label %label7, label %label9
+label5:                                                ; preds = %label_entry, %label10
+  %op6 = icmp ne i32 2800, 0
+  br i1 %op6, label %label13, label %label17
+label7:                                                ; preds = %label2
+  %op8 = getelementptr [2801 x i32], [2801 x i32]* %op0, i32 0, i32 %op3
+  br label %label10
+label9:                                                ; preds = %label2
   call void @neg_idx_except()
-  br label %label11
-label11:                                                ; preds = %label8, %label10
-  %op12 = sub i32 10, %op2
-  %op13 = sitofp i32 %op12 to float
-  store float %op13, float* %op9
-  %op14 = add i32 %op2, 1
-  %op15 = icmp slt i32 %op14, 10
-  br i1 %op15, label %label1, label %label4
-label16:                                                ; preds = %label4, %label24
-  %op17 = phi i32 [ 0, %label4 ], [ %op26, %label24 ]
-  %op18 = icmp sge i32 %op17, 0
-  br i1 %op18, label %label20, label %label23
-label19:                                                ; preds = %label4, %label24
+  br label %label10
+label10:                                                ; preds = %label7, %label9
+  store i32 2000, i32* %op8
+  %op11 = add i32 %op3, 1
+  %op12 = icmp slt i32 %op11, 2800
+  br i1 %op12, label %label2, label %label5
+label13:                                                ; preds = %label5, %label22
+  %op14 = phi i32 [ 0, %label5 ], [ %op26, %label22 ]
+  %op15 = phi i32 [ 2800, %label5 ], [ %op27, %label22 ]
+  %op16 = icmp ne i32 %op15, 0
+  br i1 %op16, label %label18, label %label22
+label17:                                                ; preds = %label5, %label22
   ret void
-label20:                                                ; preds = %label16
-  %op21 = getelementptr [10 x float], [10 x float]* @x, i32 0, i32 %op17
-  %op22 = load float, float* %op21
-  br label %label24
-label23:                                                ; preds = %label16
+label18:                                                ; preds = %label13, %label49
+  %op19 = phi i32 [ 0, %label13 ], [ %op50, %label49 ]
+  %op20 = phi i32 [ %op15, %label13 ], [ %op45, %label49 ]
+  %op21 = icmp sge i32 %op20, 0
+  br i1 %op21, label %label29, label %label32
+label22:                                                ; preds = %label13, %label49
+  %op23 = phi i32 [ 0, %label13 ], [ %op50, %label49 ]
+  %op24 = sdiv i32 %op23, 10000
+  %op25 = add i32 %op14, %op24
+  call void @printfour(i32 %op25)
+  %op26 = call i32 @mod(i32 %op23, i32 10000)
+  %op27 = sub i32 %op15, 14
+  %op28 = icmp ne i32 %op27, 0
+  br i1 %op28, label %label13, label %label17
+label29:                                                ; preds = %label18
+  %op30 = getelementptr [2801 x i32], [2801 x i32]* %op0, i32 0, i32 %op20
+  %op31 = load i32, i32* %op30
+  br label %label33
+label32:                                                ; preds = %label18
   call void @neg_idx_except()
-  br label %label24
-label24:                                                ; preds = %label20, %label23
-  %op25 = fptosi float %op22 to i32
-  call void @output(i32 %op25)
-  %op26 = add i32 %op17, 1
-  %op27 = icmp slt i32 %op26, 10
-  br i1 %op27, label %label16, label %label19
+  br label %label33
+label33:                                                ; preds = %label29, %label32
+  %op34 = mul i32 %op31, 10000
+  %op35 = add i32 %op19, %op34
+  %op36 = mul i32 2, %op20
+  %op37 = sub i32 %op36, 1
+  %op38 = icmp sge i32 %op20, 0
+  br i1 %op38, label %label39, label %label41
+label39:                                                ; preds = %label33
+  %op40 = getelementptr [2801 x i32], [2801 x i32]* %op0, i32 0, i32 %op20
+  br label %label42
+label41:                                                ; preds = %label33
+  call void @neg_idx_except()
+  br label %label42
+label42:                                                ; preds = %label39, %label41
+  %op43 = call i32 @mod(i32 %op35, i32 %op37)
+  store i32 %op43, i32* %op40
+  %op44 = sdiv i32 %op35, %op37
+  %op45 = sub i32 %op20, 1
+  %op46 = icmp ne i32 %op45, 0
+  br i1 %op46, label %label47, label %label49
+label47:                                                ; preds = %label42
+  %op48 = mul i32 %op44, %op45
+  br label %label49
+label49:                                                ; preds = %label42, %label47
+  %op50 = phi i32 [ %op44, %label42 ], [ %op48, %label47 ]
+  %op51 = icmp ne i32 %op45, 0
+  br i1 %op51, label %label18, label %label22
 }
