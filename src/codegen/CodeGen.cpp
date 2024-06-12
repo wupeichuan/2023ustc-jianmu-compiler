@@ -184,7 +184,7 @@ void CodeGen::gen_prologue() {
         if (arg.get_type()->is_float_type()) {
             if(m->get_handle(&arg)!=-1){
                 append_inst("movgr2fr.w $ft14, $zero");
-                append_inst("fadd.s",{FReg::ft(m->get_handle(&arg)).print(),FReg::fa(garg_cnt++).print(),FReg::ft(14).print()});
+                append_inst("fadd.s",{FReg::ft(m->get_handle(&arg)).print(),FReg::fa(farg_cnt++).print(),FReg::ft(14).print()}); // not garg_cnt but farg_cnt 
             }
             else
                 store_from_freg(&arg, FReg::fa(farg_cnt++));
