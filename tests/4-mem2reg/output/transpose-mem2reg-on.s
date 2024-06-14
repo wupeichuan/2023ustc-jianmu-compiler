@@ -88,8 +88,7 @@ readarray:
 	slt $t1, $t0, $t1
 # br i1 %op13, label %label2, label %label5
 # %op3 = phi i32 [ 0, %label_entry ], [ %op11, %label9 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -28
+	st.w $t0, $fp, -28
 	bnez $t1, .readarray_label2
 	b .readarray_label5
 readarray_exit:
@@ -344,8 +343,7 @@ transpose:
 	add.w $t4, $t4, $t8
 # br label %label29
 # %op30 = phi i32 [ %op23, %label22 ], [ %op66, %label65 ]
-	add.d $t7, $t4, $zero
-	st.w $t7, $fp, -156
+	st.w $t4, $fp, -156
 	b .transpose_label29
 transpose_exit:
 	addi.d $sp, $sp, 304
@@ -508,8 +506,7 @@ main:
 	slt $t1, $t0, $t1
 # br i1 %op30, label %label15, label %label19
 # %op16 = phi i32 [ 0, %label6 ], [ %op28, %label26 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -68
+	st.w $t0, $fp, -68
 	bnez $t1, .main_label15
 	b .main_label19
 .main_label31:

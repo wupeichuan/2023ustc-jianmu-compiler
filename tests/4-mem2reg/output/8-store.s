@@ -113,8 +113,7 @@ main:
 	slt $t1, $t0, $t8
 # br i1 %op8, label %label2, label %label9
 # %op3 = phi i32 [ 0, %label_entry ], [ %op7, %label2 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -72
+	st.w $t0, $fp, -72
 	bnez $t1, .main_label2
 	b .main_label9
 .main_label9:
@@ -179,14 +178,14 @@ main:
 	addi.w $t8, $zero, 10
 	slt $t3, $t0, $t8
 # br i1 %op24, label %label11, label %label15
-# %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
-	add.d $t1, $t1, $zero
 # %op13 = phi i32 [ 0, %label9 ], [ %op23, %label21 ]
 	add.d $t0, $t0, $zero
+# %op12 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
+	st.w $t1, $fp, -128
+	add.d $t1, $t1, $zero
 	bnez $t3, .main_label11
-	st.w $t0, $fp, -112
 # %op16 = phi i32 [ 0, %label9 ], [ %op22, %label21 ]
-	add.d $t0, $t1, $zero
+	ld.w $t0, $fp, -128
 	b .main_label15
 main_exit:
 	addi.d $sp, $sp, 144

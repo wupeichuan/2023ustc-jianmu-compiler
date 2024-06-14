@@ -74,7 +74,113 @@ class CodeGen {
     void create_graph(BasicBlock* bb);
     std::shared_ptr<struct Node> find(Value* val);
     void move_data(std::vector<std::vector<Value*>> val_move);
-
+    void insert_true2false(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1) true2false_greg.insert({m->get_handle(val),false});
+        }
+        else
+            if(m->get_handle(val)!=-1) true2false_freg.insert({m->get_handle(val),false});
+    }
+    void insert_false2false(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1) false2false_greg.insert({m->get_handle(val),false});
+        }
+        else
+            if(m->get_handle(val)!=-1) false2false_freg.insert({m->get_handle(val),false});
+    }
+    void insert_true2true(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1) true2true_greg.insert({m->get_handle(val),false});
+        }
+        else
+            if(m->get_handle(val)!=-1) true2true_freg.insert({m->get_handle(val),false});
+    }
+    void insert_val(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1) gval[m->get_handle(val)]=val;
+        }
+        else
+            if(m->get_handle(val)!=-1) fval[m->get_handle(val)]=val;
+    }
+    Value* get_val(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1) return gval[m->get_handle(val)];
+            else return NULL;
+        }
+        else
+            if(m->get_handle(val)!=-1) return fval[m->get_handle(val)];
+            else return NULL;
+    }
+    bool is_need_store(Value* val,std::vector<std::vector<Value*>> val_move){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1){
+                if(true2true_greg.count(m->get_handle(val))>0){
+                    true2true_greg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else if(val_move==true_val_move&&true2false_greg.count(m->get_handle(val))>0){
+                    true2false_greg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else if(val_move==false_val_move&&false2false_greg.count(m->get_handle(val))>0){
+                    false2false_greg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+        else{
+            if(m->get_handle(val)!=-1){
+                if(true2true_freg.count(m->get_handle(val))>0){
+                    true2true_freg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else if(val_move==true_val_move&&true2false_freg.count(m->get_handle(val))>0){
+                    true2false_freg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else if(val_move==false_val_move&&false2false_freg.count(m->get_handle(val))>0){
+                    false2false_freg[m->get_handle(val)]=true;
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+    }
+    bool is_need_load(Value* val,std::vector<std::vector<Value*>> val_move){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(m->get_handle(val)!=-1){
+                if(true2true_greg.count(m->get_handle(val))>0&&true2true_greg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else if(val_move==false_val_move&&true2false_greg.count(m->get_handle(val))>0&&true2false_greg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else if(val_move==false_val_move&&false2false_greg.count(m->get_handle(val))>0&&false2false_greg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+        else{
+            if(m->get_handle(val)!=-1){
+                if(true2true_freg.count(m->get_handle(val))>0&&true2true_freg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else if(val_move==false_val_move&&true2false_freg.count(m->get_handle(val))>0&&true2false_freg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else if(val_move==false_val_move&&false2false_freg.count(m->get_handle(val))>0&&false2false_freg[m->get_handle(val)]==true){
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+    }
     static std::string label_name(BasicBlock *bb) {
         return "." + bb->get_parent()->get_name() + "_" + bb->get_name();
     }
@@ -102,6 +208,10 @@ class CodeGen {
     std::shared_ptr<struct Node> graph_start;
     std::vector<std::vector<Value*>> true_val_move;
     std::vector<std::vector<Value*>> false_val_move;
-    std::unordered_set<Value*> save_val;
-    std::unordered_set<Value*> false_val;
+    std::set<std::shared_ptr<struct Node>> true2false_node;
+    std::map<int,bool> true2false_greg;std::map<int,bool> true2false_freg;
+    std::map<int,bool> false2false_greg;std::map<int,bool> false2false_freg;
+    std::map<int,bool> true2true_greg;std::map<int,bool> true2true_freg;
+    std::map<int,Value*> gval;
+    std::map<int,Value*> fval;
 };

@@ -1960,6 +1960,10 @@ void CodeGen::create_graph(BasicBlock* bb){
                                 node_from->succ.insert(node_to);
                                 node_to->pre.insert(node_from);
                             }
+                            // important!
+                            if(graph_start->succ.count(node_to)>0&&node_from!=node_to){
+                                graph_start->succ.erase(node_to);
+                            }
                         }
                     }
                 }
@@ -1970,8 +1974,11 @@ void CodeGen::create_graph(BasicBlock* bb){
 void CodeGen::phi_resort(BasicBlock* bb){
     true_val_move.clear();
     false_val_move.clear();
-    save_val.clear();
-    false_val.clear();
+    true2false_node.clear();
+    true2false_greg.clear();true2false_freg.clear();
+    false2false_greg.clear();false2false_freg.clear();
+    true2true_greg.clear();true2true_freg.clear();
+    gval.clear();fval.clear();
     create_graph(bb);
     std::vector<std::shared_ptr<struct Node>> stack;
     std::set<std::shared_ptr<struct Node>> marked;
@@ -2012,12 +2019,14 @@ void CodeGen::phi_resort(BasicBlock* bb){
                 }
                 auto iter_val = dynamic_cast<Instruction*>(succ_val);
                 if(iter_val->get_parent()==bb_true){
-                    if(false_val.count(succ_val)>0) true_val_move.push_back({succ_val,NULL});
+                    if(true2false_node.count(succ_node)>0) insert_true2false(succ_val);
                     true_val_move.push_back({pre_val,succ_val});
+                    insert_val(pre_val);
                 }
                 else{
-                    false_val.insert(pre_val);
+                    true2false_node.insert(pre_node);
                     false_val_move.push_back({pre_val,succ_val});
+                    insert_val(pre_val);
                 }
                 succ_node->pre.erase(pre_node);
                 pre_node->succ.erase(succ_node);
@@ -2036,16 +2045,20 @@ void CodeGen::phi_resort(BasicBlock* bb){
                 Value* succ_val_2= *iter_2;
                 auto iter_val = dynamic_cast<Instruction*>(succ_val_1);
                 if(iter_val->get_parent()==bb_true){
-                    if(false_val.count(succ_val_1)>0) true_val_move.push_back({succ_val_1,NULL});
+                    if(true2false_node.count(succ_node)>0) insert_true2false(succ_val_1);
                     true_val_move.push_back({pre_val_1,succ_val_1});
-                    false_val.insert(pre_val_2);
+                    insert_val(pre_val_1);
+                    true2false_node.insert(pre_node_2);
                     false_val_move.push_back({pre_val_2,succ_val_2});
+                    insert_val(pre_val_2);
                 }
                 else{
-                    if(false_val.count(succ_val_2)>0) true_val_move.push_back({succ_val_2,NULL});
+                    if(true2false_node.count(succ_node)>0) insert_true2false(succ_val_2);
                     true_val_move.push_back({pre_val_2,succ_val_2});
-                    false_val.insert(pre_val_1);
+                    insert_val(pre_val_2);
+                    true2false_node.insert(pre_node_1);
                     false_val_move.push_back({pre_val_1,succ_val_1});
+                    insert_val(pre_val_1);
                 }
                 succ_node->pre.erase(pre_node_1);
                 succ_node->pre.erase(pre_node_2);
@@ -2092,11 +2105,13 @@ void CodeGen::phi_resort(BasicBlock* bb){
                     }
                     auto iter_val = dynamic_cast<Instruction*>(succ_val);
                     if(iter_val->get_parent()==bb_true){
-                        if(false_val.count(succ_val)>0) true_val_move.push_back({succ_val,NULL});
+                        if(true2false_node.count(node)>0) insert_true2false(succ_val);
+                        insert_val(pre_val);
                         true_val_move.push_back({pre_val,succ_val});
                     }
                     else{
-                        false_val.insert(pre_val);
+                        true2false_node.insert(node);
+                        insert_val(pre_val);
                         false_val_move.push_back({pre_val,succ_val});
                     }
                     node->pre.erase(node);
@@ -2128,11 +2143,15 @@ void CodeGen::phi_resort(BasicBlock* bb){
                 }
                 auto iter_val = dynamic_cast<Instruction*>(succ_val);
                 if(iter_val->get_parent()==bb_true){
-                    true_val_move.push_back({succ_val,NULL});
+                    if(true2false_node.count(succ_node)>0) insert_true2false(succ_val);
+                    insert_true2true(succ_val);
+                    insert_val(pre_val);
                     true_val_move.push_back({pre_val,succ_val});
                 }
                 else{
-                    false_val_move.push_back({succ_val,NULL});
+                    insert_false2false(succ_val);
+                    insert_val(pre_val);
+                    true2false_node.insert(pre_node);
                     false_val_move.push_back({pre_val,succ_val});
                 }
                 succ_node->pre.erase(pre_node);
@@ -2147,101 +2166,98 @@ void CodeGen::move_data(std::vector<std::vector<Value*>> val_move){
         Value* val_from = *move_set.begin();
         auto it = move_set.begin(); it++;
         Value* val_to = *it;
-        if(val_to==NULL){
-            save_val.insert(val_from);
-            if(val_from->get_type()->is_integer_type()){
-                store_from_greg(val_from,Reg::t(m->get_handle(val_from)));
+        auto inst = dynamic_cast<Instruction*>(val_to);
+        append_inst(inst->print(), ASMInstruction::Comment);
+        bool is_store = is_need_store(val_to,val_move);
+        bool is_load = is_need_load(val_from,val_move);
+        if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)!=-1){
+            if((val_to)->get_type()->is_integer_type()){
+                if(is_load&&is_store){
+                    store_from_greg(get_val(val_to),Reg::t(m->get_handle(val_to)));
+                    load_to_greg(val_from,Reg::t(m->get_handle(val_to)));
+                }
+                else if(is_load&&!is_store){
+                    load_to_greg(val_from,Reg::t(m->get_handle(val_to)));
+                }
+                else if(!is_load&&is_store){
+                    store_from_greg(get_val(val_to),Reg::t(m->get_handle(val_to)));
+                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                        Reg::t(m->get_handle(val_from)).print(),"$zero"});
+                }
+                else{
+                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                        Reg::t(m->get_handle(val_from)).print(),"$zero"});
+                }
             }
             else{
-                store_from_freg(val_from,FReg::ft(m->get_handle(val_from)));
-            }
-        }
-        else{
-            auto inst = dynamic_cast<Instruction*>(val_to);
-            append_inst(inst->print(), ASMInstruction::Comment);
-            if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)!=-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    if(save_val.count(val_from)>0){
-                        load_to_greg(val_from,Reg::t(7));
-                        append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
-                            Reg::t(7).print(),"$zero"});
-                    }
-                    else{
-                        append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
-                            Reg::t(m->get_handle(val_from)).print(),"$zero"});
-                    }
+                if(is_load&&is_store){
+                    store_from_freg(get_val(val_to),FReg::ft(m->get_handle(val_to)));
+                    load_to_freg(val_from,FReg::ft(m->get_handle(val_to)));
                 }
-                else{
-                    if(save_val.count(val_from)>0){
-                        load_to_freg(val_from,FReg::ft(15));
-                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                        append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
-                            FReg::ft(15).print(),FReg::ft(14).print()});
-                    }
-                    else{
-                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                        append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
-                            FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
-                    }
+                else if(is_load&&!is_store){
+                    load_to_freg(val_from,FReg::ft(m->get_handle(val_to)));
                 }
-            }
-            else if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)==-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    if(save_val.count(val_from)>0){
-                        load_to_greg(val_from,Reg::t(7));
-                        append_inst("add.d",{Reg::t(7).print(),
-                            Reg::t(7).print(),"$zero"});
-                        store_from_greg(val_to,Reg::t(7));
-                    }
-                    else{
-                        append_inst("add.d",{Reg::t(7).print(),
-                            Reg::t(m->get_handle(val_from)).print(),"$zero"});
-                        store_from_greg(val_to,Reg::t(7));
-                    }
-                }
-                else{
-                    if(save_val.count(val_from)>0){
-                        load_to_freg(val_from,FReg::ft(15));
-                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                        append_inst("fadd.s",{FReg::ft(15).print(),
-                            FReg::ft(15).print(),FReg::ft(14).print()});
-                        store_from_freg(val_to,FReg::ft(15));
-                    }
-                    else{
-                        append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                        append_inst("fadd.s",{FReg::ft(15).print(),
-                            FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
-                        store_from_freg(val_to,FReg::ft(15));
-                    }
-                }
-            }
-            else if(m->get_handle(val_from)==-1&&m->get_handle(val_to)!=-1){
-                if((val_to)->get_type()->is_integer_type()){
-                    load_to_greg(val_from,Reg::t(7));
-                    append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
-                        Reg::t(7).print(),"$zero"});
-                }
-                else{
-                    load_to_freg(val_from,FReg::ft(15));
+                else if(!is_load&&is_store){
+                    store_from_freg(get_val(val_to),FReg::ft(m->get_handle(val_to)));
                     append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
                     append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
-                        FReg::ft(15).print(),FReg::ft(14).print()});
+                        FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
+                }
+                else{
+                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                    append_inst("add.d",{FReg::ft(m->get_handle(val_to)).print(),
+                        FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
                 }
             }
-            else{
-                if((val_to)->get_type()->is_integer_type()){
+        }
+        else if(m->get_handle(val_from)!=-1&&m->get_handle(val_to)==-1){
+            if((val_to)->get_type()->is_integer_type()){
+                if(is_load){
                     load_to_greg(val_from,Reg::t(7));
-                    append_inst("add.d",{Reg::t(7).print(),
-                        Reg::t(7).print(),"$zero"});
                     store_from_greg(val_to,Reg::t(7));
                 }
                 else{
+                    store_from_greg(val_to,Reg::t(m->get_handle(val_from)));
+                }
+            }
+            else{
+                if(is_load){
                     load_to_freg(val_from,FReg::ft(15));
-                    append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("fadd.s",{FReg::ft(15).print(),
-                        FReg::ft(15).print(),FReg::ft(14).print()});
                     store_from_freg(val_to,FReg::ft(15));
                 }
+                else{
+                    store_from_freg(val_to,FReg::ft(m->get_handle(val_from)));
+                }
+            }
+        }
+        else if(m->get_handle(val_from)==-1&&m->get_handle(val_to)!=-1){
+            if((val_to)->get_type()->is_integer_type()){
+                if(is_store) store_from_greg(get_val(val_to),Reg::t(m->get_handle(val_to)));
+                load_to_greg(val_from,Reg::t(7));
+                append_inst("add.d",{Reg::t(m->get_handle(val_to)).print(),
+                    Reg::t(7).print(),"$zero"});
+            }
+            else{
+                if(is_store) store_from_freg(get_val(val_to),FReg::ft(m->get_handle(val_to)));
+                load_to_freg(val_from,FReg::ft(15));
+                append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
+                    FReg::ft(15).print(),FReg::ft(14).print()});
+            }
+        }
+        else{
+            if((val_to)->get_type()->is_integer_type()){
+                load_to_greg(val_from,Reg::t(7));
+                append_inst("add.d",{Reg::t(7).print(),
+                    Reg::t(7).print(),"$zero"});
+                store_from_greg(val_to,Reg::t(7));
+            }
+            else{
+                load_to_freg(val_from,FReg::ft(15));
+                append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
+                append_inst("fadd.s",{FReg::ft(15).print(),
+                    FReg::ft(15).print(),FReg::ft(14).print()});
+                store_from_freg(val_to,FReg::ft(15));
             }
         }
     }

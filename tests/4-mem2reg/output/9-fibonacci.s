@@ -122,8 +122,7 @@ main:
 	slt $t1, $t0, $t8
 # br i1 %op5, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -24
+	st.w $t0, $fp, -24
 	bnez $t1, .main_label1
 	b .main_label6
 .main_label6:

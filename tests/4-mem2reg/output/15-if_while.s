@@ -77,17 +77,17 @@ main:
 	sltu $t0, $zero, $t7
 # br i1 %op18, label %label1, label %label7
 	st.b $t0, $fp, -69
-# %op2 = phi i32 [ 0, %label_entry ], [ %op16, %label15 ]
-	add.d $t2, $t2, $zero
 # %op3 = phi i32 [ 10, %label_entry ], [ %op5, %label15 ]
 	add.d $t1, $t1, $zero
+# %op2 = phi i32 [ 0, %label_entry ], [ %op16, %label15 ]
+	st.w $t2, $fp, -64
+	add.d $t2, $t2, $zero
 # %op4 = phi i32 [ 0, %label_entry ], [ %op17, %label15 ]
 	add.d $t0, $t5, $zero
 	ld.b $t7, $fp, -69
 	bnez $t7, .main_label1
-	st.w $t1, $fp, -44
 # %op8 = phi i32 [ 0, %label_entry ], [ %op16, %label15 ]
-	add.d $t1, $t2, $zero
+	ld.w $t1, $fp, -64
 	b .main_label7
 main_exit:
 	addi.d $sp, $sp, 80

@@ -60,10 +60,11 @@ main:
 	sltu $t2, $zero, $t7
 # br i1 %op12, label %label9, label %label13
 # %op10 = phi i32 [ %op3, %label1 ], [ %op11, %label9 ]
+	st.w $t1, $fp, -52
 	add.d $t1, $t1, $zero
 	bnez $t2, .main_label9
 # %op14 = phi i32 [ %op3, %label1 ], [ %op11, %label9 ]
-	add.d $t2, $t1, $zero
+	ld.w $t2, $fp, -52
 	b .main_label13
 .main_label13:
 # %op14 = phi i32 [ %op3, %label1 ], [ %op11, %label9 ]
@@ -73,10 +74,11 @@ main:
 	sltu $t3, $zero, $t7
 # br i1 %op15, label %label1, label %label5
 # %op2 = phi i32 [ 10, %label_entry ], [ %op3, %label13 ]
+	st.w $t0, $fp, -28
 	add.d $t0, $t0, $zero
 	bnez $t3, .main_label1
 # %op7 = phi i32 [ 10, %label_entry ], [ %op3, %label13 ]
-	add.d $t1, $t0, $zero
+	ld.w $t1, $fp, -28
 # %op6 = phi i32 [ %op14, %label13 ], [ undef, %label_entry ]
 	add.d $t2, $t2, $zero
 	b .main_label5

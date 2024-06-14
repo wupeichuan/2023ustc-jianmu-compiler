@@ -156,11 +156,9 @@ returnToZeroSteps:
 	slt $t4, $t3, $t8
 # br i1 %op17, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op13, %label16 ]
-	add.d $t7, $t3, $zero
-	st.w $t7, $fp, -24
+	st.w $t3, $fp, -24
 # %op3 = phi i32 [ 0, %label_entry ], [ %op12, %label16 ]
-	add.d $t7, $t2, $zero
-	st.w $t7, $fp, -28
+	st.w $t2, $fp, -28
 	bnez $t4, .returnToZeroSteps_label1
 	b .returnToZeroSteps_label6
 returnToZeroSteps_exit:
@@ -209,8 +207,7 @@ main:
 	slt $t1, $t0, $t8
 # br i1 %op5, label %label1, label %label6
 # %op2 = phi i32 [ 0, %label_entry ], [ %op4, %label1 ]
-	add.d $t7, $t0, $zero
-	st.w $t7, $fp, -24
+	st.w $t0, $fp, -24
 	bnez $t1, .main_label1
 	b .main_label6
 .main_label6:
