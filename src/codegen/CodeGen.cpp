@@ -1963,6 +1963,10 @@ void CodeGen::create_graph(BasicBlock* bb){
                             // important!
                             if(graph_start->succ.count(node_to)>0&&node_from!=node_to){
                                 graph_start->succ.erase(node_to);
+                                // important! if find(&inst) return nullptr, it is a loop.
+                                if(find(&inst)==nullptr){
+                                    graph_start->succ.insert(node_to);
+                                }
                             }
                         }
                     }
@@ -2205,7 +2209,7 @@ void CodeGen::move_data(std::vector<std::vector<Value*>> val_move){
                 }
                 else{
                     append_inst("movgr2fr.w",{FReg::ft(14).print(),"$zero"});
-                    append_inst("add.d",{FReg::ft(m->get_handle(val_to)).print(),
+                    append_inst("fadd.s",{FReg::ft(m->get_handle(val_to)).print(),
                         FReg::ft(m->get_handle(val_from)).print(),FReg::ft(14).print()});
                 }
             }

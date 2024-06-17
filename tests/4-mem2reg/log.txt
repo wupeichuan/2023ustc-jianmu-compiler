@@ -1,1 +1,3 @@
 ==========./performance-cases/const-prop.cminus==========
+==========./performance-cases/loop.cminus==========
+==========./performance-cases/transpose.cminus==========

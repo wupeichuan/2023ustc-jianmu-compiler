@@ -1,0 +1,14 @@
+/*
+It's an example of lose of copy, this compiler cannot address the problem. 
+*/
+void main(void) {
+    int i;
+    int j;
+    i = 0;
+    while (i<10) {
+        j=i;
+        i=i+1;
+    }
+    output(j);
+    return;
+}
