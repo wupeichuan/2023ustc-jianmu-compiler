@@ -94,8 +94,13 @@ void ActiveVar::create_activevar(Function *f){
                     auto val = ir->get_operand(2*i);
                     if(!dynamic_cast<ConstantInt *>(val)&&!dynamic_cast<ConstantFP *>(val)
                         &&!dynamic_cast<GlobalVariable *>(val)){
+                        auto val_ir = dynamic_cast<Instruction *>(val);
                         if(use_bb[&bb1].count(val)==0&&def_bb[&bb1].count(val)==0)
                             use_bb[&bb1].insert(val);
+                        else if(val_ir->is_phi()){
+                            use_bb[&bb1].insert(val);
+                            def_bb[&bb1].erase(val);
+                        }
                     }
                 }
                 if(use_bb[&bb1].count(ir)==0&&def_bb[&bb1].count(ir)==0&&!dynamic_cast<GlobalVariable *>(ir))
