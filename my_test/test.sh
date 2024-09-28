@@ -9,5 +9,8 @@ bash -c "loongarch64-unknown-linux-gnu-gcc -static test.s ../src/io/io.c -o test
 result_1=$(qemu-loongarch64 ./test_1 > test_1_out) 
 
 diff test_0_out test_1_out
-difference=$(diff test_0_out test_1_out)
-echo ${difference}
+if [ $? = 0 ]; then
+    echo "MYTEST PASSED"
+else
+    echo "MYTEST FAILED"
+fi

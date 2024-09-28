@@ -1,5 +1,5 @@
 /*
-It's an example of phi loop, this compiler can address the problem. 
+It's an example of phi loop, this compiler CAN address the problem. 
 */
 void main(void) {
     int i;

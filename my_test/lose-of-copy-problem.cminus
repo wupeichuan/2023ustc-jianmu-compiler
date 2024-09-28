@@ -1,5 +1,5 @@
 /*
-It's an example of lose of copy, this compiler cannot address the problem. 
+It's an example of lose of copy, this compiler CANNOT address the problem. 
 */
 void main(void) {
     int i;

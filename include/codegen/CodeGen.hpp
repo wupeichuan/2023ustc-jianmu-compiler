@@ -74,6 +74,28 @@ class CodeGen {
     void create_graph(BasicBlock* bb);
     std::shared_ptr<struct Node> find(Value* val);
     void move_data(std::vector<std::vector<Value*>> val_move);
+    bool in_store(Value* val){
+        if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
+            if(true2true_greg.count(m->get_handle(val))>0 && true2true_greg[m->get_handle(val)] == true)
+                return true;
+            else if(true2false_greg.count(m->get_handle(val))>0 && true2false_greg[m->get_handle(val)] == true)
+                return true;
+            else if(false2false_greg.count(m->get_handle(val))>0 && false2false_greg[m->get_handle(val)] == true)
+                return true;
+            else
+                return false;
+        }
+        else{
+            if(true2true_freg.count(m->get_handle(val))>0 && true2true_freg[m->get_handle(val)] == true)
+                return true;
+            else if(true2false_freg.count(m->get_handle(val))>0 && true2false_freg[m->get_handle(val)] == true)
+                return true;
+            else if(false2false_freg.count(m->get_handle(val))>0 && false2false_freg[m->get_handle(val)] == true)
+                return true;
+            else
+                return false;
+        }
+    }
     void insert_true2false(Value* val){
         if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
             if(m->get_handle(val)!=-1) true2false_greg.insert({m->get_handle(val),false});
@@ -114,15 +136,15 @@ class CodeGen {
     bool is_need_store(Value* val,std::vector<std::vector<Value*>> val_move){
         if(val->get_type()->is_integer_type()||val->get_type()->is_pointer_type()){
             if(m->get_handle(val)!=-1){
-                if(true2true_greg.count(m->get_handle(val))>0){
+                if(true2true_greg.count(m->get_handle(val))>0&&val_move==true_val_move&&!in_store(val)){
                     true2true_greg[m->get_handle(val)]=true;
                     return true;
                 }
-                else if(val_move==true_val_move&&true2false_greg.count(m->get_handle(val))>0){
+                else if(val_move==true_val_move&&true2false_greg.count(m->get_handle(val))>0&&!in_store(val)){
                     true2false_greg[m->get_handle(val)]=true;
                     return true;
                 }
-                else if(val_move==false_val_move&&false2false_greg.count(m->get_handle(val))>0){
+                else if(val_move==false_val_move&&false2false_greg.count(m->get_handle(val)>0&&!in_store(val))){
                     false2false_greg[m->get_handle(val)]=true;
                     return true;
                 }
@@ -132,15 +154,15 @@ class CodeGen {
         }
         else{
             if(m->get_handle(val)!=-1){
-                if(true2true_freg.count(m->get_handle(val))>0){
+                if(true2true_freg.count(m->get_handle(val))>0&&val_move==true_val_move&&!in_store(val)){
                     true2true_freg[m->get_handle(val)]=true;
                     return true;
                 }
-                else if(val_move==true_val_move&&true2false_freg.count(m->get_handle(val))>0){
+                else if(val_move==true_val_move&&true2false_freg.count(m->get_handle(val))>0&&!in_store(val)){
                     true2false_freg[m->get_handle(val)]=true;
                     return true;
                 }
-                else if(val_move==false_val_move&&false2false_freg.count(m->get_handle(val))>0){
+                else if(val_move==false_val_move&&false2false_freg.count(m->get_handle(val))>0&&!in_store(val)){
                     false2false_freg[m->get_handle(val)]=true;
                     return true;
                 }

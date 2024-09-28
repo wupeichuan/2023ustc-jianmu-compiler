@@ -1,5 +1,5 @@
 /*
-It's an example of phi loop, this compiler can address the problem. 
+It's an example of phi loop, this compiler CAN address the problem. 
 */
 void main(void) {
     int i;
@@ -8,19 +8,25 @@ void main(void) {
     int x;
     int y;
     int w;
+    int k;
+    int m;
     i = 1;
     j = 2;
     x = 0;
     y = 2;
     w = 3;
+    k = 2;
+    m = 7;
     while (x<10) {
         x=x+1;
         temp=i;
         i=j;
         j=y;
-        y=temp;
-        w=temp;
+        y=w;
+        w=k;
+        k=m;
+        m=temp;
     }
-    output(i-j+w+y);
+    output(i-j+w+y+k-m);
     return;
 }
