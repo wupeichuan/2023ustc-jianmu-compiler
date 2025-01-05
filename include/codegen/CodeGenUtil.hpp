@@ -10,14 +10,12 @@
 #define LOW_20_MASK 0x000FFFFF
 #define LOW_32_MASK 0xFFFFFFFF
 
-inline unsigned ALIGN(unsigned x, unsigned alignment) {
-    return ((x + (alignment - 1)) & ~(alignment - 1));
-}
+inline unsigned ALIGN(unsigned x, unsigned alignment) { return ((x + (alignment - 1)) & ~(alignment - 1)); }
 
 inline bool IS_IMM_12(int x) { return x <= IMM_12_MAX and x >= IMM_12_MIN; }
 
 /* 栈帧相关 */
-#define PROLOGUE_OFFSET_BASE 16 // $ra $fp
+#define PROLOGUE_OFFSET_BASE 16  // $ra $fp
 #define PROLOGUE_ALIGN 16
 
 /* 龙芯指令 */
@@ -55,7 +53,7 @@ inline bool IS_IMM_12(int x) { return x <= IMM_12_MAX and x >= IMM_12_MIN; }
 #define WORD ".w"
 #define DOUBLE ".d"
 
-#define SINGLE ".s" // float
+#define SINGLE ".s"  // float
 #define LONG ".l"
 
 // ASM syntax sugar
@@ -63,13 +61,11 @@ inline bool IS_IMM_12(int x) { return x <= IMM_12_MAX and x >= IMM_12_MIN; }
 
 // errors
 class not_implemented_error : public std::logic_error {
-  public:
-    explicit not_implemented_error(std::string &&err_msg = "")
-        : std::logic_error(err_msg){};
+ public:
+  explicit not_implemented_error(std::string &&err_msg = "") : std::logic_error(err_msg){};
 };
 
 class unreachable_error : public std::logic_error {
-  public:
-    explicit unreachable_error(std::string &&err_msg = "")
-        : std::logic_error(err_msg){};
+ public:
+  explicit unreachable_error(std::string &&err_msg = "") : std::logic_error(err_msg){};
 };

@@ -25,61 +25,61 @@
  */
 
 struct Reg {
-    unsigned id;
+  unsigned id;
 
-    explicit Reg(unsigned i) : id(i) { assert(i <= 31); }
-    bool operator==(const Reg &other) { return id == other.id; }
+  explicit Reg(unsigned i) : id(i) { assert(i <= 31); }
+  bool operator==(const Reg &other) { return id == other.id; }
 
-    std::string print() const;
+  std::string print() const;
 
-    static Reg zero() { return Reg(0); }
-    static Reg ra() { return Reg(1); }
-    static Reg sp() { return Reg(3); }
-    static Reg fp() { return Reg(22); }
-    static Reg a(unsigned i) {
-        assert(0 <= i and i <= 7);
-        return Reg(i + 4);
-    }
-    static Reg t(unsigned i) {
-        assert(0 <= i and i <= 8);
-        return Reg(i + 12);
-    }
-    static Reg s(unsigned i) {
-        assert(0 <= i and i <= 9);
-        if (i == 9)
-            return Reg(22);
-        else
-            return Reg(i + 23);
-    }
+  static Reg zero() { return Reg(0); }
+  static Reg ra() { return Reg(1); }
+  static Reg sp() { return Reg(3); }
+  static Reg fp() { return Reg(22); }
+  static Reg a(unsigned i) {
+    assert(0 <= i and i <= 7);
+    return Reg(i + 4);
+  }
+  static Reg t(unsigned i) {
+    assert(0 <= i and i <= 8);
+    return Reg(i + 12);
+  }
+  static Reg s(unsigned i) {
+    assert(0 <= i and i <= 9);
+    if (i == 9)
+      return Reg(22);
+    else
+      return Reg(i + 23);
+  }
 };
 
 struct FReg {
-    unsigned id;
+  unsigned id;
 
-    explicit FReg(unsigned i) : id(i) { assert(i <= 31); }
-    bool operator==(const FReg &other) { return id == other.id; }
+  explicit FReg(unsigned i) : id(i) { assert(i <= 31); }
+  bool operator==(const FReg &other) { return id == other.id; }
 
-    std::string print() const;
+  std::string print() const;
 
-    static FReg fa(unsigned i) {
-        assert(0 <= i and i <= 7);
-        return FReg(i);
-    }
-    static FReg ft(unsigned i) {
-        assert(0 <= i and i <= 15);
-        return FReg(i + 8);
-    }
-    static FReg fs(unsigned i) {
-        assert(0 <= i and i <= 7);
-        return FReg(i + 24);
-    }
+  static FReg fa(unsigned i) {
+    assert(0 <= i and i <= 7);
+    return FReg(i);
+  }
+  static FReg ft(unsigned i) {
+    assert(0 <= i and i <= 15);
+    return FReg(i + 8);
+  }
+  static FReg fs(unsigned i) {
+    assert(0 <= i and i <= 7);
+    return FReg(i + 24);
+  }
 };
 
 struct CFReg {
-    unsigned id;
+  unsigned id;
 
-    explicit CFReg(unsigned i) : id(i) { assert(i <= 7); }
-    bool operator==(const CFReg &other) { return id == other.id; }
+  explicit CFReg(unsigned i) : id(i) { assert(i <= 7); }
+  bool operator==(const CFReg &other) { return id == other.id; }
 
-    std::string print() const { return "$fcc" + std::to_string(id); }
+  std::string print() const { return "$fcc" + std::to_string(id); }
 };
